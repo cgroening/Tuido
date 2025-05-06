@@ -1,0 +1,125 @@
+/*
+Links:
+
+https://textual.textualize.io/styles/border/
+*/
+
+
+
+/*
+ * App
+ */
+
+Header {
+    background: #193221;
+    color: green;
+    opacity: 1.0;
+}
+
+.hidden {
+    display: none;
+}
+
+#topics-tab {
+    padding-bottom: 1;
+}
+
+#tasks-tab, #notes-tab {
+    padding-bottom: 2;
+}
+
+/*
+ * Topics Tab
+ */
+
+#topics_table {
+    height: 6;
+}
+
+.form-input {
+    height: 3;
+    margin-bottom: 1;
+}
+
+.changed-input {
+    background: #3c3d00;
+}
+
+Select.changed-input SelectCurrent {
+    background: #3c3d00;
+}
+
+#form_widgets_container {
+    padding-top: 1;
+    padding-left: 1;
+    padding-right: 1;
+    height: 1fr;
+    overflow: auto;
+}
+
+/*
+ * Tasks Tab
+ */
+Label.task_column_header {
+    margin-bottom: 1;
+    /* border-bottom: thick; */
+}
+
+ListView {
+    background: transparent;
+    height: auto;
+    margin-bottom: 1;
+    margin-left: 1;
+    margin-right: 1;
+}
+
+ListView ListItem {
+    /* margin-top: 1; */
+    margin-bottom: 1;
+    padding: 0 1 0 1;
+}
+
+ListView ListItem.task_prio_high {
+    background: red 10%;
+    border: hkey rgb(157, 50, 50);
+}
+
+ListView ListItem.task_prio_medium {
+    background: yellow 10%;
+    border: hkey rgb(216, 216, 93);
+}
+
+ListView ListItem.task_prio_low {
+    background: green 10%;
+    border: hkey rgb(85, 208, 126);
+}
+
+ListView ListItem.task_prio_high.selected {
+    /* background: blue 20%; */
+    border: thick rgb(157, 50, 50);
+}
+
+ListView ListItem.task_prio_medium.selected {
+    /* background: blue 20%; */
+    border: thick rgb(216, 216, 93);
+}
+
+ListView ListItem.task_prio_low.selected {
+    /* background: blue 20%; */
+    border: thick rgb(85, 208, 126);
+}
+
+/*
+ * Notes Tab
+ */
+TextArea#notes_textarea {
+    /* height: 100%; */
+    margin: 0 1 1 1;
+    padding: 1 1 1 1;
+    border: none;
+}
+
+Markdown {
+    margin: 0 1 1 1;
+    border: none;
+}

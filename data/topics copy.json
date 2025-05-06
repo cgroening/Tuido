@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "topic": "Projektplanung",
+    "description": "Erstellung eines Projektplans für Q3.",
+    "status": "Offen",
+    "created": "2025-04-01"
+  },
+  {
+    "id": 2,
+    "topic": "Teammeeting",
+    "description": "Wöchentliches Meeting zur Projektabstimmung.",
+    "status": "In Arbeit",
+    "created": "2025-04-03"
+  },
+  {
+    "id": 3,
+    "topic": "Kundendemo",
+    "description": "Vorbereitung einer Produktdemo für den Kunden.",
+    "status": "Fertig",
+    "created": "2025-03-28"
+  },
+  {
+    "id": 4,
+    "topic": "Anforderungsanalyse",
+    "description": "Sammeln und Dokumentieren der Anforderungen.",
+    "status": "In Arbeit",
+    "created": "2025-04-02"
+  },
+  {
+    "id": 5,
+    "topic": "Marketingstrategie",
+    "description": "Entwicklung einer Kampagne für das neue Produkt.",
+    "status": "Offen",
+    "created": "2025-04-05"
+  },
+  {
+    "id": 6,
+    "topic": "Budgetprüfung",
+    "description": "Analyse der aktuellen Ausgaben im Projekt.",
+    "status": "Fertig",
+    "created": "2025-03-30"
+  },
+  {
+    "id": 7,
+    "topic": "UX Review",
+    "description": "Evaluation des User Experience Designs.",
+    "status": "In Arbeit",
+    "created": "2025-04-04"
+  },
+  {
+    "id": 8,
+    "topic": "Fehlertest",
+    "description": "Testen auf Bugs in der aktuellen Softwareversion.",
+    "status": "Offen",
+    "created": "2025-04-06"
+  },
+  {
+    "id": 9,
+    "topic": "Release-Planung",
+    "description": "Planung des nächsten Software-Releases.",
+    "status": "In Arbeit",
+    "created": "2025-04-01"
+  },
+  {
+    "id": 10,
+    "topic": "Dokumentation",
+    "description": "Aktualisierung der technischen Dokumentation.",
+    "status": "Fertig",
+    "created": "2025-03-31"
+  }
+]

@@ -1,0 +1,42 @@
+[
+    {
+        "column_name": "inbox",
+        "tasks": [
+            {
+                "description": "My First Task",
+                "priority": 1,
+                "start_date": "",
+                "end_date": ""
+            },
+            {
+                "description": "Another Task",
+                "priority": 2,
+                "start_date": "",
+                "end_date": ""
+            },
+            {
+                "description": "Not so important Task",
+                "priority": 3,
+                "start_date": "",
+                "end_date": ""
+            },
+            {
+                "description": "Also important",
+                "priority": 1,
+                "start_date": "",
+                "end_date": ""
+            }
+        ]
+    },
+    {
+        "column_name": "today",
+        "tasks": [
+            {
+                "description": "XXXX",
+                "priority": 2,
+                "start_date": "",
+                "end_date": ""
+            }
+        ]
+    }
+]

@@ -1,0 +1,39 @@
+fields:
+  -
+    - name: "topic"
+      caption: "Thema"
+      type: "string"
+  -
+    - name: "description"
+      caption: "Beschreibung"
+      type: "string"
+      lines: 3
+      show_in_table: false
+  -
+    - name: "status"
+      caption: "Status"
+      type: "select"
+      options: ["Offen", "In Arbeit", "Fertig"]
+      # tab_width: 11
+    - name: "created"
+      caption: "Erstellt"
+      type: "date"
+      # tab_width: 12
+      input_width: 16
+      read_only: true
+  -
+    - name: "actions"
+      caption: "Aktionen"
+      type: "string"
+      lines: -1
+      show_in_table: false
+
+task_columns:
+  - name: "inbox"
+    caption: "Eingang"
+  - name: "today"
+    caption: "Heute"
+  - name: "tomorrow"
+    caption: "Morgen"
+  - name: "done"
+    caption: "Erledigt"
