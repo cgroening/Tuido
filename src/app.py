@@ -67,27 +67,6 @@ class TuidoApp(App):
                 description='Copy',
                 tooltip='Copy selection to clipboard'),
 
-        # Topics controller
-        Binding(key='f1', key_display='F1', action='topics_new',
-                description='New',
-                tooltip='Create a new topic'),
-        Binding(key='f2', key_display='F2', action='topics_focus_list',
-                description='List',
-                tooltip='Focus the topic list'),
-        Binding(key='f5', key_display='F5', action='topics_save',
-                description='Save',
-                tooltip='Save the currently selected topic'),
-        Binding(key='f10', key_display='F10', action='topics_copy_clipboard',
-                description='Copy',
-                tooltip='Copy the content of the selected input to ' + \
-                             'the clipboard'),
-        Binding(key='shift+f5', key_display='⇧F5', action='topics_discard',
-                description='Discard',
-                tooltip='Discard the changes made on the current topic'),
-        Binding(key='shift+f8', key_display='⇧F8', action='topics_delete',
-                description='Delete',
-                tooltip='Delete the currently selected topic'),
-
         # Tasks controller
         Binding(key='f1', key_display='F1', action='tasks_new',
                 description='New',
@@ -113,6 +92,27 @@ class TuidoApp(App):
         Binding(key='f8', key_display='F8', action='tasks_remove_date',
                 description='Date -',
                 tooltip='Remove the date from the task'),
+
+        # Topics controller
+        Binding(key='f1', key_display='F1', action='topics_new',
+                description='New',
+                tooltip='Create a new topic'),
+        Binding(key='f2', key_display='F2', action='topics_focus_list',
+                description='List',
+                tooltip='Focus the topic list'),
+        Binding(key='f5', key_display='F5', action='topics_save',
+                description='Save',
+                tooltip='Save the currently selected topic'),
+        Binding(key='f10', key_display='F10', action='topics_copy_clipboard',
+                description='Copy',
+                tooltip='Copy the content of the selected input to ' + \
+                             'the clipboard'),
+        Binding(key='shift+f5', key_display='⇧F5', action='topics_discard',
+                description='Discard',
+                tooltip='Discard the changes made on the current topic'),
+        Binding(key='shift+f8', key_display='⇧F8', action='topics_delete',
+                description='Delete',
+                tooltip='Delete the currently selected topic'),
 
         # Notes controller
         Binding(key='f1', key_display='F1', action='notes_do_something',
@@ -166,8 +166,6 @@ class TuidoApp(App):
         self.notes_controller = NotesController(
             self.config, self.notes_model, self.main_tabs
         )
-
-
 
         logging.info('App initialized')
 
@@ -412,6 +410,12 @@ class TuidoApp(App):
         # else:
         #     logging.info('Kein Widget hat den Fokus.')
         pass
+
+    def action_tasks_new(self) -> None:
+        """
+        Creates a new topic.
+        """
+        self.tasks_controller.testest()
 
     def action_topics_new(self) -> None:
         """

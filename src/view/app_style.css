@@ -10,7 +10,7 @@ https://textual.textualize.io/styles/border/
  * App
  */
 
-Header {
+ Header {
     background: #193221;
     color: green;
     opacity: 1.0;
@@ -95,17 +95,17 @@ ListView ListItem.task_prio_low {
 }
 
 ListView ListItem.task_prio_high.selected {
-    /* background: blue 20%; */
+    background: red 20%;
     border: thick rgb(157, 50, 50);
 }
 
 ListView ListItem.task_prio_medium.selected {
-    /* background: blue 20%; */
+    background: yellow 20%;
     border: thick rgb(216, 216, 93);
 }
 
 ListView ListItem.task_prio_low.selected {
-    /* background: blue 20%; */
+    background: green 20%;
     border: thick rgb(85, 208, 126);
 }
 

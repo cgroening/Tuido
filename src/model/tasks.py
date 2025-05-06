@@ -81,6 +81,9 @@ class Tasks(metaclass=Singleton):
         self.load_from_file()
 
     def load_from_file(self):
+        """
+        Loads the tasks from the JSON file.
+        """
         # Create the file if it does not exist
         if not os.path.exists(self.json_path):
             with open(self.json_path, 'w', encoding='utf-8') as file:
@@ -90,12 +93,17 @@ class Tasks(metaclass=Singleton):
         with open(self.json_path, 'r', encoding='utf-8') as file:
             tasks_raw = json.load(file)
 
+        self.generate_tasks_dict(tasks_raw)
 
+    def generate_tasks_dict(self, tasks_raw: dict):
+        """
+        Generates a dictionary of tasks from the raw data.
 
-
+        Args:
+            tasks_raw: The raw data loaded from the JSON file.
+        """
         for column_name, tasks_list in tasks_raw.items():
             self.tasks[column_name] = []
-
             for task_dict in tasks_list:
                 task = Task(
                     column_name=column_name,
@@ -106,9 +114,7 @@ class Tasks(metaclass=Singleton):
                     days_to_start=self.days_to(task_dict['start_date']),
                     days_to_end=self.days_to(task_dict['end_date'])
                 )
-
                 self.tasks[column_name].append(task)
-
 
         # Sort the tasks by priority
         for column_name, tasks_list in self.tasks.items():
