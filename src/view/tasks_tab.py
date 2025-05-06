@@ -170,8 +170,10 @@ class TasksTab(Static):
                         item = ListItem(
                                 Static(Text(task.description, style='bold')),
                                 Static(),  # Empty line
-                                Static(Text('▶️ ' + start_date_text, style=start_date_style)),
-                                Static(Text('⏹️ ' + end_date_text, style=end_date_style)),
+                                # Static(Text('▶️ ' + start_date_text, style=start_date_style)),
+                                Static(Text('↑' + start_date_text, style=start_date_style)),
+                                # Static(Text('⏹️ ' + end_date_text, style=end_date_style)),
+                                Static(Text('↓' + end_date_text, style=end_date_style)),
 
 
                         )
