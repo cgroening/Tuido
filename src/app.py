@@ -7,16 +7,19 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.widget import Widget
 from textual.widgets import Footer, Header, Tabs, DataTable, Input, Select, TextArea, Markdown
+from textual.containers import Vertical
+from textual.screen import ModalScreen
 from rich.text import Text  # type: ignore # noqa
 
 from controller.topics_controller import TopicsController
 from controller.tasks_controller import TasksController
 from controller.notes_controller import NotesController
-from model.config import Config
-from model.notes import Notes
-from model.tasks import Tasks
-from model.topics import Topic
+from model.config_model import Config
+from model.notes_model import Notes
+from model.tasks_model import Tasks
+from model.topics_model import Topic
 from view.main_tabs import MainTabs
+from view.tasks_tab_form import TasksInputPopup
 from util.question_screen import QuestionScreen
 
 
@@ -147,20 +150,20 @@ class TuidoApp(App):
         self.config = Config('data/config.yaml')
 
         # Models
-        self.topics_model = Topic('data/topics.json')
         self.tasks_model = Tasks('data/tasks.json')
+        self.topics_model = Topic('data/topics.json')
         self.notes_model = Notes('data/notes.md')
 
         # Views
         self.main_tabs = MainTabs()
 
         # Controllers
-        self.topics_controller = TopicsController(
-            self.config, self.topics_model, self.main_tabs
+        self.tasks_controller = TasksController(
+            self.config, self.tasks_model, self.main_tabs, self
         )
 
-        self.tasks_controller = TasksController(
-            self.config, self.tasks_model, self.main_tabs
+        self.topics_controller = TopicsController(
+            self.config, self.topics_model, self.main_tabs
         )
 
         self.notes_controller = NotesController(
@@ -554,3 +557,16 @@ class TuidoApp(App):
 
     # async def on_key(self, event: events.Key) -> None:
     #     self.notify(f"Key pressed: {event.key}")
+
+
+
+
+
+
+
+
+
+
+    def on_tasks_input_popup_submit(self, message: TasksInputPopup.Submit) -> None:
+        logging.info(f"Name: {message.description}, Email: {message.priority}")
+        logging.info(self.main_tabs.tasks_tab.selected_task_index)

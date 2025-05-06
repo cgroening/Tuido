@@ -1,4 +1,6 @@
+from __future__ import annotations
 import logging
+
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.events import Key, Focus, Blur
@@ -8,7 +10,8 @@ from textual.widgets import Static, ListView, ListItem, Label
 from rich.padding import Padding
 from rich.text import Text
 
-from model.tasks import Task, TaskPriority
+from model.tasks_model import Task, TaskPriority
+from view.tasks_tab_form import TasksInputPopup  # Import the TasksTab_Form class
 
 
 class CustomListView(ListView):
@@ -25,8 +28,10 @@ class CustomListView(ListView):
         vertical_scroll: The parent container that is scrolled.
     """
     vertical_scroll: VerticalScroll
+    tasks_tab: TasksTab
 
-    def __init__(self, vertical_scroll, *args, **kwargs):
+
+    def __init__(self, vertical_scroll, tasks_tab, *args, **kwargs):
         """
         Initializes the CustomListView.
 
@@ -38,6 +43,7 @@ class CustomListView(ListView):
         super().__init__(*args, **kwargs)
         self.vertical_scroll = vertical_scroll
         self.vertical_scroll.can_focus = False
+        self.tasks_tab = tasks_tab
 
     async def on_key(self, event: Key) -> None:
         """
@@ -92,6 +98,7 @@ class CustomListView(ListView):
             item.remove_class('selected')
 
         self.change_class(self.index or 0)
+        self.tasks_tab.selected_task_index = self.index or 0
 
     def on_blur(self, event: Blur) -> None:
         """
@@ -116,6 +123,7 @@ class CustomListView(ListView):
             item.remove_class('selected')
 
         event.item.add_class('selected')
+        self.tasks_tab.selected_task_index = self.index or 0
 
 
 class TasksTab(Static):
@@ -138,11 +146,17 @@ class TasksTab(Static):
         column_names: A list of column names.
         column_captions: A dictionary mapping column names to their captions.
         tasks: A dictionary mapping column names to lists of Task objects.
+        input_form: The input form for adding or editing tasks.
+        selected_column_name: The name of the currently selected column.
+        selected_task_index: The index of the currently selected task.
     """
     list_views: dict[str, CustomListView] = {}
     column_names: list[str]
     column_captions: dict[str, str]
     tasks: dict[str, list[Task]]
+    input_form: TasksInputPopup
+    selected_column_name: str
+    selected_task_index: int
 
 
     def compose(self) -> ComposeResult:
@@ -162,9 +176,13 @@ class TasksTab(Static):
                     # ListView for the column
                     vertical_scroll = VerticalScroll()
                     with vertical_scroll:
-                        list_view = CustomListView(vertical_scroll, *list_items)
+                        list_view = CustomListView(vertical_scroll, self, *list_items)
                         self.list_views[column_name] = list_view
                         yield list_view
+
+        self.input_form = TasksInputPopup(id='tasks-input-popup')
+        self.input_form.display = False
+        yield self.input_form
 
     def create_list_items(self, column_name: str) -> list[ListItem]:
         # Return empty list if the column doesn't have any tasks

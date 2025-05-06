@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pylightlib.msc.DateTime import DateTime    # type: ignore
 from pylightlib.msc.Singleton import Singleton  # type: ignore
 
-from model.config import Config  # type: ignore
+from model.config_model import Config  # type: ignore
 
 
 

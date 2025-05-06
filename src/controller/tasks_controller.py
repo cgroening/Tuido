@@ -1,18 +1,21 @@
 import logging
 
+from textual.app import App
 from textual.widgets import ListView
 
-from model.config import Config  # type: ignore
-from model.tasks import Task, Tasks    # type: ignore
+from model.config_model import Config  # type: ignore
+from model.tasks_model import Task, Tasks    # type: ignore
 from view.main_tabs import MainTabs  # type: ignore
+from view.tasks_tab_form import TasksInputPopup  # type: ignore
 
 
 class TasksController:
     config: Config
     tasks_model: Tasks
     main_tabs: MainTabs
+    app: App
 
-    def __init__(self, config: Config, tasks_model: Tasks, main_tabs: MainTabs):
+    def __init__(self, config: Config, tasks_model: Tasks, main_tabs: MainTabs, app: App):
         """
         Initializes the TasksController.
 
@@ -20,10 +23,12 @@ class TasksController:
             config: The configuration object.
             tasks_model: The tasks model object.
             main_tabs: The main tabs object.
+            app: The main application object.
         """
         self.config = config
         self.tasks_model = tasks_model
         self.main_tabs = main_tabs
+        self.app = app
 
         tasks_tab = self.main_tabs.tasks_tab
 
@@ -35,7 +40,7 @@ class TasksController:
         # tasks_tab.add_list_view()
         # tasks_tab.add_list_view()
 
-    def testest(self):
+    def testest2(self):
 
         tasks_tab = self.main_tabs.tasks_tab
         tasks_tab.list_views['inbox'].clear()
@@ -69,4 +74,12 @@ class TasksController:
 
         # list_view.append(new_task)
 
+    def testest(self):
+        # self.input_form = TasksTab_Form()
+        # self.input_form.display = True
+        # self.app.set_focus(self.input_form.name_input)
+
+        input_form: TasksInputPopup = self.main_tabs.tasks_tab.input_form
+        input_form.display = True
+        self.app.set_focus(input_form.description_input)
 

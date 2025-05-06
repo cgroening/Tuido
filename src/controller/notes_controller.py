@@ -8,8 +8,8 @@ from textual.widgets import TextArea
 
 from pylightlib.msc.Singleton import Singleton  # type: ignore
 
-from model.config import Config  # type: ignore
-from model.notes import Notes    # type: ignore
+from model.config_model import Config  # type: ignore
+from model.notes_model import Notes    # type: ignore
 from view.main_tabs import MainTabs  # type: ignore
 
 

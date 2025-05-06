@@ -5,7 +5,7 @@ from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll, V
 from textual.widgets import Static, DataTable, Input, Label, Select, TextArea
 from rich.text import Text  # type: ignore # noqa
 
-from model.config import Config  # type: ignore
+from model.config_model import Config  # type: ignore
 
 
 class TopicsDataTable(DataTable):

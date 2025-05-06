@@ -7,8 +7,8 @@ from rich.text import Text  # type: ignore # noqa
 
 from pylightlib.msc.Singleton import Singleton  # type: ignore
 
-from model.config import Config, FieldType, FieldDefinition  # type: ignore
-from model.topics import Topic    # type: ignore
+from model.config_model import Config, FieldType, FieldDefinition  # type: ignore
+from model.topics_model import Topic    # type: ignore
 from view.main_tabs import MainTabs  # type: ignore
 
 

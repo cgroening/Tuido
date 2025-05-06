@@ -1,33 +1,56 @@
 from textual.app import App, ComposeResult
-from textual.widgets import ListView, ListItem, Label
-from textual.events import Key
+from textual.widgets import Button, Input, Label
+from textual.containers import Container, Vertical
+from textual.message import Message
 
-class MyListViewApp(App):
-    # CSS = """
-    # ListView {
-    #     width: 100%;
-    #     height: 100%;
-    # }
-    # """
+class InputPopup(Container):
+    class Submit(Message):
+        def __init__(self, name: str, email: str) -> None:
+            self.name = name
+            self.email = email
+            super().__init__()
 
     def compose(self) -> ComposeResult:
-        items = [ListItem(Label(f"Item {i}")) for i in range(100)]
-        self.list_view = ListView(*items)
-        yield self.list_view
+        yield Label("Name:")
+        self.name_input = Input(placeholder="Name eingeben")
+        yield self.name_input
+        yield Label("E-Mail:")
+        self.email_input = Input(placeholder="E-Mail eingeben")
+        yield self.email_input
+        yield Button("Senden", id="submit")
 
-# async def on_key(self, event: Key) -> None:
-#     index = self.list_view.index or 0
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "submit":
+            self.post_message(self.Submit(self.name_input.value, self.email_input.value))
+            self.display = False  # Popup ausblenden
 
-#     if event.key == "up":
-#         index = max(0, index - 1)
-#     elif event.key == "down":
-#         index = min(len(self.list_view.children) - 1, index + 1)
-#     else:
-#         return
+class MyApp(App):
+    CSS = """
+    InputPopup {
+        background: $background;
+        padding: 2;
+        border: round $secondary;
+        width: 50%;
+        height: auto;
+        dock: top;
+        layer: popup;
+        align: center middle;
+    }
+    """
 
-#     self.list_view.index = index
-#     item = self.list_view.children[index]
-#     await self.list_view.scroll_to_node(item)
+    def compose(self) -> ComposeResult:
+        yield Button("Öffne Popup", id="open")
+        self.popup = InputPopup()
+        self.popup.display = False
+        yield self.popup
 
-if __name__ == "__main__":
-    MyListViewApp().run()
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "open":
+            self.popup.display = True
+            self.set_focus(self.popup.name_input)
+
+    def on_input_popup_submit(self, message: InputPopup.Submit) -> None:
+        # Hier könntest du die Daten weiterverarbeiten
+        self.console.log(f"Name: {message.name}, Email: {message.email}")
+
+MyApp().run()

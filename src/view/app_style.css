@@ -109,6 +109,21 @@ ListView ListItem.task_prio_low.selected {
     border: thick rgb(85, 208, 126);
 }
 
+TasksInputPopup {
+    background: $background;
+    padding: 2;
+    border: round $secondary;
+    /* width: 50%; */
+    height: auto;
+    /* dock: top; */
+    layer: popup;
+    align: center middle;
+}
+
+TasksInputPopup Input, TasksInputPopup Select, TasksInputPopup MaskedInput {
+    margin: 1 0 1 0;
+}
+
 /*
  * Notes Tab
  */
