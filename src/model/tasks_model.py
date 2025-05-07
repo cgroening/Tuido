@@ -105,14 +105,8 @@ class Tasks(metaclass=Singleton):
         for column_name, tasks_list in tasks_raw.items():
             self.tasks[column_name] = []
             for task_dict in tasks_list:
-                task = Task(
-                    column_name=column_name,
-                    description=task_dict['description'],
-                    priority=self.num_to_priority(task_dict['priority']),
-                    start_date=task_dict['start_date'],
-                    end_date=task_dict['end_date'],
-                    days_to_start=self.days_to(task_dict['start_date']),
-                    days_to_end=self.days_to(task_dict['end_date'])
+                task = self.create_task_object_from_raw_data(
+                    column_name, task_dict
                 )
                 self.tasks[column_name].append(task)
 
@@ -120,7 +114,56 @@ class Tasks(metaclass=Singleton):
         for column_name, tasks_list in self.tasks.items():
             tasks_list.sort(key=lambda task: task.priority.value)
 
-    def num_to_priority(self, num: int) -> TaskPriority:
+    def create_task_object_from_raw_data(self, column_name: str,
+                                         task_dict: dict[str, str]) -> Task:
+        """
+        Creates a Task object from raw data.
+
+        Args:
+            column_name: The name of the column the task belongs to.
+            task_dict: The raw data dictionary containing task information.
+        """
+        return Task(
+            column_name=column_name,
+            description=task_dict['description'],
+            priority=self.num_to_priority(int(task_dict['priority'])),
+            start_date=task_dict['start_date'],
+            end_date=task_dict['end_date'],
+            days_to_start=self.days_to(task_dict['start_date']),
+            days_to_end=self.days_to(task_dict['end_date'])
+        )
+
+    def add_task_to_dict_from_raw_data(self, column_name: str,
+                                       task_dict: dict[str, str]) -> None:
+        """
+        Adds a task to the tasks dictionary from raw data.
+
+        Args:
+            column_name: The name of the column the task belongs to.
+            task_dict: The raw data dictionary containing task information.
+        """
+        # Create task object and add it to the tasks dictionary
+        task = self.create_task_object_from_raw_data(
+            column_name, task_dict
+        )
+        self.tasks[column_name].append(task)
+
+        # Sort the tasks for the column_name by priority
+        self.tasks[column_name].sort(key=lambda task: task.priority.value)
+
+    def delete_task(self, column_name: str, task_index: int) -> None:
+        """
+        Deletes a task from the tasks dictionary.
+
+        Args:
+            column_name: The name of the column the task belongs to.
+            task_index: The index of the task to be deleted.
+        """
+        if column_name in self.tasks and 0 <= task_index < len(self.tasks[column_name]):
+            del self.tasks[column_name][task_index]
+
+
+    def num_to_priority(self, priority_number: int) -> TaskPriority:
         """
         Converts a number to a TaskPriority enum.
 
@@ -130,13 +173,31 @@ class Tasks(metaclass=Singleton):
         Returns:
             The corresponding TaskPriority enum.
         """
-        match num:
+        match priority_number:
             case 1:
                 return TaskPriority.HIGH
             case 2:
                 return TaskPriority.MEDIUM
             case _:
                 return TaskPriority.LOW
+
+    def priority_str_to_num(self, priority_string: str) -> int:
+        """
+        Converts a number to a TaskPriority enum.
+
+        Args:
+            num: The number to convert.
+
+        Returns:
+            The corresponding TaskPriority enum.
+        """
+        match priority_string.upper():
+            case 'HIGH':
+                return 1
+            case 'MEDIUM':
+                return 2
+            case _:
+                return 3
 
     def days_to(self, date_str: str) -> int | None:
         """

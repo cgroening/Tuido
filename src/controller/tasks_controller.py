@@ -1,3 +1,4 @@
+import enum
 import logging
 
 from textual.app import App
@@ -9,11 +10,18 @@ from view.main_tabs import MainTabs  # type: ignore
 from view.tasks_tab_form import TasksInputPopup  # type: ignore
 
 
+# create enum for task actions
+class TaskAction(enum.Enum):
+    NEW = 'new'
+    EDIT = 'edit'
+
+
 class TasksController:
     config: Config
     tasks_model: Tasks
     main_tabs: MainTabs
     app: App
+    task_action: TaskAction
 
     def __init__(self, config: Config, tasks_model: Tasks, main_tabs: MainTabs, app: App):
         """
@@ -30,15 +38,90 @@ class TasksController:
         self.main_tabs = main_tabs
         self.app = app
 
+        # Set up the tasks tab with the tasks model data
         tasks_tab = self.main_tabs.tasks_tab
-
         tasks_tab.column_captions = self.tasks_model.column_captions
         tasks_tab.column_names = self.tasks_model.column_names
         tasks_tab.tasks = self.tasks_model.tasks
 
-        # tasks_tab.add_list_view()
-        # tasks_tab.add_list_view()
-        # tasks_tab.add_list_view()
+    def show_task_form(self, task_action: TaskAction) -> None:
+        """
+        Displays the task form for creating or editing a task.
+
+        Args:
+            task_action: The action to perform (new or edit).
+        """
+        self.task_action = task_action
+
+        input_form = self.main_tabs.tasks_tab.input_form
+        input_form.display = True
+        self.app.set_focus(input_form.description_input)
+
+        self.set_task_form_input_values()
+
+    def set_task_form_input_values(self) -> None:
+        """
+        Sets the input values for the task form based on the selected task
+        if the task action is `TaskAction.EDIT`.
+        """
+        if self.task_action == TaskAction.EDIT:
+            # Get name of the active list view and index of the selected task
+            tasks_tab = self.main_tabs.tasks_tab
+            column_name = tasks_tab.selected_column_name
+            selected_task_index = tasks_tab.selected_task_index
+
+            # Get the selected task and set the input form values
+            task = self.tasks_model.tasks[column_name][selected_task_index]
+            input_form = self.main_tabs.tasks_tab.input_form
+            input_form.set_input_values(task)
+
+    def save_task(self, message: TasksInputPopup.Submit) -> None:
+        logging.info('Saving task:')
+        logging.info(f'Saving task: {message.description}')
+        logging.info(f'Saving task: {message.priority}')
+        logging.info(f'Saving task: {message.start_date}')
+        logging.info(f'Saving task: {message.end_date}')
+
+        column_name = self.main_tabs.tasks_tab.selected_column_name
+        selected_task_index = self.main_tabs.tasks_tab.selected_task_index
+
+        # model
+        task_raw = {
+            'description': message.description,
+            'priority':    self.tasks_model.priority_str_to_num(message.priority),
+            'start_date':  message.start_date,
+            'end_date':    message.end_date
+        }
+
+        self.tasks_model.delete_task(column_name, selected_task_index)
+
+        self.tasks_model.add_task_to_dict_from_raw_data(column_name, task_raw)
+
+        # TODO: SAVE MODEL TO FILE
+
+
+        # view
+
+        self.recreate_list_view(column_name)
+
+
+
+
+    def recreate_list_view(self, column_name: str) -> None:
+
+        # view
+        tasks_tab = self.main_tabs.tasks_tab
+        list_view: ListView = tasks_tab.list_views[column_name]
+        list_view.clear()
+
+        list_items = tasks_tab.create_list_items(column_name)
+
+        for list_item in list_items:
+            list_view.append(list_item)
+
+
+
+
 
     def testest2(self):
 

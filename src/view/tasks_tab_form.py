@@ -1,9 +1,11 @@
 from typing import Any
 
 from textual.app import App, ComposeResult
-from textual.containers import Container, Vertical
+from textual.containers import Container, Horizontal, Vertical
 from textual.message import Message
 from textual.widgets import Button, Input, Label, Select, MaskedInput
+
+from model.tasks_model import Task, TaskPriority  # type: ignore
 
 
 class TasksInputPopup(Container):
@@ -67,8 +69,36 @@ class TasksInputPopup(Container):
                                           placeholder='YYYY-MM-DD')
         yield self.end_date_input
 
-        # Submit Button
-        yield Button('Submit', id='submit')
+        # with Vertical():
+        with Horizontal():
+            yield Button('Today', id='today')
+            yield Button('Tomorrow', id='tomorrow')
+
+        # Submit and Cancel Button
+        with Horizontal():
+            yield Button('Submit', id='submit')
+            yield Button('Cancel', id='cancel')
+
+    def set_input_values(self, task: Task):
+        """
+        Sets the input values in the popup based on the provided task.
+
+        Args:
+            task: The task object containing the values to be set.
+        """
+        self.description_input.value = task.description
+
+        match task.priority:
+            case TaskPriority.HIGH:
+                task_priority = 'High'
+            case TaskPriority.MEDIUM:
+                task_priority = 'Medium'
+            case _:
+                task_priority = 'Low'
+        self.priority_input.value = task_priority
+
+        self.start_date_input.value = task.start_date
+        self.end_date_input.value = task.end_date
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """

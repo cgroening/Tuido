@@ -26,12 +26,16 @@ class CustomListView(ListView):
 
     Attributes:
         vertical_scroll: The parent container that is scrolled.
+        tasks_tab: The TasksTab object that contains the list of tasks.
+        column_name: The name of the column the ListView belongs to.
     """
     vertical_scroll: VerticalScroll
     tasks_tab: TasksTab
+    column_name: str
 
 
-    def __init__(self, vertical_scroll, tasks_tab, *args, **kwargs):
+    def __init__(self, vertical_scroll: VerticalScroll, tasks_tab: TasksTab,
+                 column_name: str, *args, **kwargs):
         """
         Initializes the CustomListView.
 
@@ -44,6 +48,7 @@ class CustomListView(ListView):
         self.vertical_scroll = vertical_scroll
         self.vertical_scroll.can_focus = False
         self.tasks_tab = tasks_tab
+        self.column_name = column_name
 
     async def on_key(self, event: Key) -> None:
         """
@@ -98,6 +103,7 @@ class CustomListView(ListView):
             item.remove_class('selected')
 
         self.change_class(self.index or 0)
+        self.tasks_tab.selected_column_name = self.column_name
         self.tasks_tab.selected_task_index = self.index or 0
 
     def on_blur(self, event: Blur) -> None:
@@ -123,6 +129,7 @@ class CustomListView(ListView):
             item.remove_class('selected')
 
         event.item.add_class('selected')
+        self.tasks_tab.selected_column_name = self.column_name
         self.tasks_tab.selected_task_index = self.index or 0
 
 
@@ -176,7 +183,8 @@ class TasksTab(Static):
                     # ListView for the column
                     vertical_scroll = VerticalScroll()
                     with vertical_scroll:
-                        list_view = CustomListView(vertical_scroll, self, *list_items)
+                        list_view = CustomListView(vertical_scroll, self,
+                                                   column_name, *list_items)
                         self.list_views[column_name] = list_view
                         yield list_view
 

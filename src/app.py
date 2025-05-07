@@ -12,7 +12,7 @@ from textual.screen import ModalScreen
 from rich.text import Text  # type: ignore # noqa
 
 from controller.topics_controller import TopicsController
-from controller.tasks_controller import TasksController
+from controller.tasks_controller import TasksController, TaskAction
 from controller.notes_controller import NotesController
 from model.config_model import Config
 from model.notes_model import Notes
@@ -74,8 +74,8 @@ class TuidoApp(App):
         Binding(key='f1', key_display='F1', action='tasks_new',
                 description='New',
                 tooltip='Create a new task'),
-        Binding(key='f2', key_display='F2', action='tasks_list',
-                description='List',
+        Binding(key='f2', key_display='F2', action='tasks_edit',
+                description='EDIT',
                 tooltip='Focus the tasks list'),
         Binding(key='f3', key_display='F3', action='tasks_down',
                 description='↓',
@@ -307,6 +307,10 @@ class TuidoApp(App):
 
         self.compare_input_value_to_original(event)
 
+    def on_tasks_input_popup_submit(self, message: TasksInputPopup.Submit) \
+    -> None:
+        self.tasks_controller.save_task(message)
+
     def on_select_changed(self, event: Select.Changed) -> None:
         """
         Is triggered when the value of a Select is changed.
@@ -416,9 +420,15 @@ class TuidoApp(App):
 
     def action_tasks_new(self) -> None:
         """
-        Creates a new topic.
+        Displays the task form for creating a new task.
         """
-        self.tasks_controller.testest()
+        self.tasks_controller.show_task_form(TaskAction.NEW)
+
+    def action_tasks_edit(self) -> None:
+        """
+        Displays the task form for editing the currently selected task.
+        """
+        self.tasks_controller.show_task_form(TaskAction.EDIT)
 
     def action_topics_new(self) -> None:
         """
@@ -559,14 +569,3 @@ class TuidoApp(App):
     #     self.notify(f"Key pressed: {event.key}")
 
 
-
-
-
-
-
-
-
-
-    def on_tasks_input_popup_submit(self, message: TasksInputPopup.Submit) -> None:
-        logging.info(f"Name: {message.description}, Email: {message.priority}")
-        logging.info(self.main_tabs.tasks_tab.selected_task_index)
