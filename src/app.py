@@ -12,7 +12,7 @@ from textual.screen import ModalScreen
 from rich.text import Text  # type: ignore # noqa
 
 from controller.topics_controller import TopicsController
-from controller.tasks_controller import TasksController, TaskAction
+from controller.tasks_controller import TasksController, TaskAction, TaskMoveDirection
 from controller.notes_controller import NotesController
 from model.config_model import Config
 from model.notes_model import Notes
@@ -54,16 +54,20 @@ class TuidoApp(App):
         # Global
         Binding(key='q', key_display='q', action='app_previous_tab',
                 description='Tab ←',
-                tooltip='Select the previous tab'),
+                tooltip='Select the previous tab',
+                show=False),
         Binding(key='w', key_display='w', action='app_next_tab',
                 description='Tab →',
-                tooltip='Select the next tab'),
+                tooltip='Select the next tab',
+                show=False),
         Binding(key='d', key_display='d', action='app_toggle_dark',
                 description='Lights',
-                tooltip='Toggle between dark and light mode'),
+                tooltip='Toggle between dark and light mode',
+                show=False),
         Binding(key='ctrl+q', key_display='^q', action='quit',
                 description='Quit',
-                tooltip='Quit the app'),
+                tooltip='Quit the app',
+                show=False),
 
         Binding(key='f11', key_display='F11',
                 action='app_copy_selection_to_clipboard',
@@ -76,25 +80,28 @@ class TuidoApp(App):
                 tooltip='Create a new task'),
         Binding(key='f2', key_display='F2', action='tasks_edit',
                 description='EDIT',
-                tooltip='Focus the tasks list'),
-        Binding(key='f3', key_display='F3', action='tasks_down',
-                description='↓',
-                tooltip='Move the currently selected task down'),
-        Binding(key='f4', key_display='F4', action='tasks_up',
-                description='↑',
-                tooltip='Move the currently selected task up'),
-        Binding(key='f5', key_display='F5', action='tasks_today',
-                description='Today',
-                tooltip='Set start and end date to today'),
-        Binding(key='f6', key_display='F6', action='tasks_tomorrow',
-                description='Tomorrow',
-                tooltip='Set start and end date to tomorrow'),
-        Binding(key='f7', key_display='F7', action='tasks_add_date',
-                description='Date +',
-                tooltip='Open the date picker to set start and end date'),
-        Binding(key='f8', key_display='F8', action='tasks_remove_date',
-                description='Date -',
-                tooltip='Remove the date from the task'),
+                tooltip='Edit the currently selected task'),
+        Binding(key='f3', key_display='F3', action='tasks_left',
+                description='←',
+                tooltip='Move the currently selected task left'),
+        Binding(key='f4', key_display='F4', action='tasks_right',
+                description='→',
+                tooltip='Move the currently selected task right'),
+        Binding(key='shift+f8', key_display='⇧F8', action='tasks_delete',
+                description='DEL',
+                tooltip='Delete the currently selected task'),
+        # Binding(key='f5', key_display='F5', action='tasks_today',
+        #         description='Today',
+        #         tooltip='Set start and end date to today'),
+        # Binding(key='f6', key_display='F6', action='tasks_tomorrow',
+        #         description='Tomorrow',
+        #         tooltip='Set start and end date to tomorrow'),
+        # Binding(key='f7', key_display='F7', action='tasks_add_date',
+        #         description='Date +',
+        #         tooltip='Open the date picker to set start and end date'),
+        # Binding(key='f8', key_display='F8', action='tasks_remove_date',
+        #         description='Date -',
+        #         tooltip='Remove the date from the task'),
 
         # Topics controller
         Binding(key='f1', key_display='F1', action='topics_new',
@@ -430,6 +437,33 @@ class TuidoApp(App):
         """
         self.tasks_controller.show_task_form(TaskAction.EDIT)
 
+    def action_tasks_left(self) -> None:
+        """
+        Moves the currently selected task to the left column.
+        """
+        self.tasks_controller.move_task(TaskMoveDirection.LEFT)
+
+    def action_tasks_right(self) -> None:
+        """
+        Moves the currently selected task to the right column.
+        """
+        self.tasks_controller.move_task(TaskMoveDirection.RIGHT)
+
+    @work
+    async def action_tasks_delete(self) -> None:
+        """
+        Deletes the currently selected task.
+        The user will be asked for confirmation before the task is deleted.
+        """
+        if await self.push_screen_wait(
+            QuestionScreen("Really delete the selected task?"),
+        ):
+            self.tasks_controller.delete_selected_task()
+            self.notify('Task deleted!')
+        else:
+            self.notify('Deletion canceled.', severity='warning')
+
+
     def action_topics_new(self) -> None:
         """
         Creates a new topic.
@@ -481,6 +515,7 @@ class TuidoApp(App):
     async def action_topics_delete(self) -> None:
         """
         Deletes the currently selected topic.
+
         The user will be asked for confirmation before the topic is
         deleted.
         """

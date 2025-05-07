@@ -191,7 +191,7 @@ class Tasks(metaclass=Singleton):
         Returns:
             The corresponding TaskPriority enum.
         """
-        match priority_string.upper():
+        match str(priority_string).upper():
             case 'HIGH':
                 return 1
             case 'MEDIUM':

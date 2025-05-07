@@ -10,10 +10,14 @@ from view.main_tabs import MainTabs  # type: ignore
 from view.tasks_tab_form import TasksInputPopup  # type: ignore
 
 
-# create enum for task actions
 class TaskAction(enum.Enum):
     NEW = 'new'
     EDIT = 'edit'
+
+
+class TaskMoveDirection(enum.Enum):
+    LEFT = 'left'
+    RIGHT = 'right'
 
 
 class TasksController:
@@ -82,9 +86,6 @@ class TasksController:
         logging.info(f'Saving task: {message.start_date}')
         logging.info(f'Saving task: {message.end_date}')
 
-        column_name = self.main_tabs.tasks_tab.selected_column_name
-        selected_task_index = self.main_tabs.tasks_tab.selected_task_index
-
         # model
         task_raw = {
             'description': message.description,
@@ -93,7 +94,17 @@ class TasksController:
             'end_date':    message.end_date
         }
 
-        self.tasks_model.delete_task(column_name, selected_task_index)
+        if self.task_action == TaskAction.NEW:
+            column_name = self.config.task_column_names[0]
+
+        elif self.task_action == TaskAction.EDIT:
+
+            column_name = self.main_tabs.tasks_tab.selected_column_name
+            selected_task_index = self.main_tabs.tasks_tab.selected_task_index
+
+
+
+            self.tasks_model.delete_task(column_name, selected_task_index)
 
         self.tasks_model.add_task_to_dict_from_raw_data(column_name, task_raw)
 
@@ -121,48 +132,78 @@ class TasksController:
 
 
 
+    def move_task(self, move_direction: TaskMoveDirection) -> None:
+        source_column_name = self.main_tabs.tasks_tab.selected_column_name
+
+        column_names = self.config.task_column_names
+
+        # get index of the source column
+        source_column_index = column_names.index(source_column_name)
+
+        if move_direction == TaskMoveDirection.LEFT:
+            target_column_index = max(source_column_index - 1, 0)
+        elif move_direction == TaskMoveDirection.RIGHT:
+            target_column_index = min(source_column_index + 1, len(column_names) - 1)
+
+        target_column_name = self.config.task_column_names[target_column_index]
+
+        logging.info(f'Moving task from {source_column_name} to {target_column_name}')
 
 
-    def testest2(self):
+        if source_column_index == target_column_index:
+            return
 
+        if len(self.tasks_model.tasks[source_column_name]) == 0:
+            return
+
+
+        # Remove task from source column
+        selected_task_index = self.main_tabs.tasks_tab.selected_task_index
+        task_to_move = self.tasks_model.tasks[source_column_name][selected_task_index]
+        self.tasks_model.delete_task(source_column_name, selected_task_index)
+
+        # Add task to target column
+        task_to_move.column_name = target_column_name
+
+        if target_column_name not in self.tasks_model.tasks:
+            self.tasks_model.tasks[target_column_name] = []
+
+        self.tasks_model.tasks[target_column_name].append(task_to_move)
+        self.tasks_model.tasks[target_column_name].sort(key=lambda task: task.priority.value)
+
+        # TODO: SAVE MODEL TO FILE
+
+        # Update the view
+        self.recreate_list_view(source_column_name)
+        self.recreate_list_view(target_column_name)
+
+        # Select the moved task in the target column
+        target_list_view: ListView = self.main_tabs.tasks_tab.list_views[target_column_name]
+
+        # Find the index of the moved task in the target column
+        target_task_index = 0
+        for i, task in enumerate(self.tasks_model.tasks[target_column_name]):
+            if task == task_to_move:
+                target_task_index = i
+                break
+
+
+        target_list_view.index = target_task_index
+        target_list_view.focus()
+
+    def delete_selected_task(self) -> None:
+        """
+        Deletes the selected task from the tasks model and updates the view.
+        """
         tasks_tab = self.main_tabs.tasks_tab
-        tasks_tab.list_views['inbox'].clear()
-        logging.info(list(tasks_tab.list_views.keys()))
+        column_name = tasks_tab.selected_column_name
+        selected_task_index = tasks_tab.selected_task_index
 
+        logging.info(f'Deleting task from {column_name} at index {selected_task_index}')
 
-        # New task
-        list_view: ListView = tasks_tab.list_views['inbox']
+        if selected_task_index is not None:
+            self.tasks_model.delete_task(column_name, selected_task_index)
 
-        new_task = Task(
-            column_name='inbox',
-            description='Test task',
-            priority=1,
-            start_date='2023-10-01',
-            end_date='2023-10-31',
-            days_to_start=0,
-            days_to_end=30
-        )
+            # TODO: SAVE MODEL TO FILE
 
-        tasks_tab.tasks['inbox'].append(new_task)
-
-        # for list_view in
-
-        list_items = tasks_tab.create_list_items('inbox')
-
-
-        for list_item in list_items:
-            list_view.append(list_item)
-
-        # list_view.append(list_items)
-
-        # list_view.append(new_task)
-
-    def testest(self):
-        # self.input_form = TasksTab_Form()
-        # self.input_form.display = True
-        # self.app.set_focus(self.input_form.name_input)
-
-        input_form: TasksInputPopup = self.main_tabs.tasks_tab.input_form
-        input_form.display = True
-        self.app.set_focus(input_form.description_input)
-
+            self.recreate_list_view(column_name)

@@ -74,6 +74,8 @@ class CustomListView(ListView):
         item = self.children[index]
         self.vertical_scroll.scroll_to_widget(item)
         self.change_class(index)
+        self.tasks_tab.selected_column_name = self.column_name
+        self.tasks_tab.selected_task_index = index or 0
 
 
     def change_class(self, index: int) -> None:
