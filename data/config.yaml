@@ -21,6 +21,16 @@ fields:
       # tab_width: 12
       input_width: 16
       read_only: true
+      computed: "created_date"
+      show_in_table: false
+    - name: "edited"
+      caption: "Bearbeitet"
+      type: "date"
+      # tab_width: 12
+      input_width: 16
+      read_only: true
+      computed: "edit_date"
+      show_in_table: false
   -
     - name: "actions"
       caption: "Aktionen"

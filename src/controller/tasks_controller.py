@@ -130,6 +130,8 @@ class TasksController:
         for list_item in list_items:
             list_view.append(list_item)
 
+        tasks_tab.set_can_focus()
+
 
 
     def move_task(self, move_direction: TaskMoveDirection) -> None:

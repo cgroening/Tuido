@@ -83,7 +83,7 @@ class Topic(metaclass=Singleton):
     #     self.data.sort(key=lambda x: x['id'], reverse=True)
 
     def create_new_topic(self, topic: dict[str, str | int | float | bool]) \
-        -> None:
+    -> None:
         """
         Add a new topic to `data` and `topics_by_id` and save it to JSON file.
 

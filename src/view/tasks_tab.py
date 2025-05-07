@@ -195,6 +195,21 @@ class TasksTab(Static):
         yield self.input_form
 
     def create_list_items(self, column_name: str) -> list[ListItem]:
+        """
+        Creates a list of ListItem objects for the given column name.
+
+        Each ListItem represents a task in the column.
+        The ListItem contains the task description, start date, and end date.
+        The start date and end date are color-coded based on the number of
+        days until the date.
+
+        Args:
+            column_name: The name of the column to create ListItems for.
+
+        Returns:
+            list_items: A list of ListItem objects representing the tasks in
+                        the column.
+        """
         # Return empty list if the column doesn't have any tasks
         list_items: list[ListItem] = []
         if column_name not in self.tasks.keys():
@@ -207,10 +222,10 @@ class TasksTab(Static):
             end_date_text, end_date_style = self.end_date_text_and_style(task)
 
             list_item = ListItem(
-                    Static(Text(task.description, style='bold')),
-                    Static(),
-                    Static(Text('↑' + start_date_text, style=start_date_style)),
-                    Static(Text('↓' + end_date_text, style=end_date_style)),
+                Static(Text(task.description, style='bold')),
+                Static(),
+                Static(Text('↑' + start_date_text, style=start_date_style)),
+                Static(Text('↓' + end_date_text, style=end_date_style)),
             )
 
             self.set_priority_class(list_item, task)
@@ -228,7 +243,8 @@ class TasksTab(Static):
         The style is determined based on the number of days until the date:
             - Green: if the date is in the future (x > 0)
             - Yellow: if the date is today (x = 0)
-            - Red: if the start date is in the past (x < 0) and end date is in the past, too.
+            - Red: if the start date is in the past (x < 0) and end date is
+                in the past, too.
 
         If the date is not set, it returns '---' as the text and an empty style.
 
@@ -302,3 +318,25 @@ class TasksTab(Static):
                 list_item.add_class('task_prio_medium')
             case _:
                 list_item.add_class('task_prio_low')
+
+    def set_can_focus(self):
+        """
+        Checks if the ListView has any children and sets the can_focus
+        attribute to True if it does.
+        """
+
+        # for list_view in self.list_views.values():
+        #     logging.info(f'ListView {list_view.column_name} has {len(list_view.children)} children')
+
+        #     if len(list_view.children) > 0:
+        #         list_view.can_focus = True
+        #     else:
+        #         list_view.can_focus = False
+        #         # list_view.can_focus = True
+        # pass
+
+        for column_name in self.column_names:
+            if column_name in self.tasks.keys() and len(self.tasks[column_name]) > 0:
+                self.list_views[column_name].can_focus = True
+            else:
+                self.list_views[column_name].can_focus = False

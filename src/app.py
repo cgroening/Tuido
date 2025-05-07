@@ -50,6 +50,7 @@ class TuidoApp(App):
     topics_controller: TopicsController
     notes_controller: NotesController
 
+
     BINDINGS = [
         # Global
         Binding(key='q', key_display='q', action='app_previous_tab',
@@ -153,6 +154,7 @@ class TuidoApp(App):
         Initializes the app.
         """
         super().__init__()
+        # self.COMMAND_PALETTE_DISPLAY = None
         # Config
         self.config = Config('data/config.yaml')
 
@@ -185,7 +187,7 @@ class TuidoApp(App):
         """
         yield Header(icon='🗂️')
         yield self.main_tabs
-        yield Footer(show_command_palette=True)
+        yield Footer(show_command_palette=False)
 
     def on_startup(self) -> None:
         """
@@ -202,6 +204,8 @@ class TuidoApp(App):
         # Initialize the topics table
         table = self.query_one("#topics_table", expect_type=DataTable)
         self.topics_controller.initialize_topics_table(table)
+
+        self.main_tabs.tasks_tab.set_can_focus()
 
     def on_ready(self) -> None:
         """
@@ -468,6 +472,11 @@ class TuidoApp(App):
         """
         Creates a new topic.
         """
+        if len(self.topics_controller.user_changed_inputs) > 0:
+            self.notify('Discard or save changes first.',
+                        severity='warning')
+            return
+
         self.topics_controller.create_new_topic()
 
     def action_topics_focus_table(self) -> None:
@@ -483,6 +492,10 @@ class TuidoApp(App):
         """
         # Update topics model with the values from the input fields
         self.topics_controller.save_topic(lambda id: self.query_one(id))
+
+        # self.topics_controller.update_input_fields(
+        #     lambda id: self.query_one(id), called_from_discard=True
+        # )
 
         # Remove class "changed-input" from all changed inputs
         for field in self.topics_controller.user_changed_inputs:

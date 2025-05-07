@@ -17,7 +17,7 @@ class FieldType(Enum):
     DATE = auto()
 
 
-@dataclass
+@dataclass(slots=True, frozen=True)
 class FieldDefinition:
     """
     Dataclass for a field definition for the topics table.
@@ -33,6 +33,8 @@ class FieldDefinition:
         column_width: The width of the column in the table.
         input_width: The width of the input field.
         read_only: Indicates whether the field is read only.
+        computed: Name of the computed value the field gets if the topic is
+            created or updated.
     """
     name: str
     caption: str
@@ -43,6 +45,7 @@ class FieldDefinition:
     column_width: int | None = None
     input_width: int | None = None
     read_only: bool = False
+    computed: str | None = None
 
 
 class Config(metaclass=Singleton):
@@ -112,6 +115,7 @@ class Config(metaclass=Singleton):
                     column_width =col.get('column_width', None),
                     input_width  =col.get('input_width', None),
                     read_only    =col.get('read_only', False),
+                    computed     =col.get('computed', None)
                 )
                 self.columns.append(column)
                 self.columns_dict[col['name']] = column

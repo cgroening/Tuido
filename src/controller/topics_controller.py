@@ -1,3 +1,4 @@
+import enum
 import logging
 from typing import Callable
 
@@ -6,10 +7,19 @@ from textual.coordinate import Coordinate
 from rich.text import Text  # type: ignore # noqa
 
 from pylightlib.msc.Singleton import Singleton  # type: ignore
+from pylightlib.msc.DateTime import DateTime  # type: ignore
 
 from model.config_model import Config, FieldType, FieldDefinition  # type: ignore
 from model.topics_model import Topic    # type: ignore
 from view.main_tabs import MainTabs  # type: ignore
+
+
+class TopicAction(enum.Enum):
+    """
+    Enum for topic actions.
+    """
+    NEW = 'new'
+    EDIT = 'edit'
 
 
 class TopicsController(metaclass=Singleton):
@@ -207,6 +217,8 @@ class TopicsController(metaclass=Singleton):
         for col in self.config.columns:
             new_topic[col.name] = ''
 
+        new_topic = self.apply_field_function(new_topic, TopicAction.NEW)
+
         self.topics_model.create_new_topic(new_topic)
         logging.info(f'New topic created with ID {new_id}.')
 
@@ -258,9 +270,49 @@ class TopicsController(metaclass=Singleton):
                 col_counter += 1
 
         # Update the model with the new value
+        updated_topic = self.apply_field_function(updated_topic,
+                                                  TopicAction.EDIT)
         self.topics_model.update_topic(topic_id, updated_topic)
 
+        # Update the view
+        self.update_input_fields(input_query_func)
+
         logging.info(f'Topic with ID {topic_id} updated.')
+
+    def apply_field_function(
+        self,
+        topic: dict[str, str | int | float | bool],
+        topic_action: TopicAction
+    ) -> dict[str, str | int | float | bool]:
+        """
+        Applies field functions (e.g. 'created_date' or 'edit_date')
+        to the topic based on the action (new/edit).
+
+        Args:
+            topic: The topic data to be updated.
+            topic_action: The action to perform (new or edit).
+
+        Returns:
+            The updated topic data.
+        """
+        field_names = list(topic.keys())
+        field_names.remove('id')
+
+        for field_name in field_names:
+            field_def: FieldDefinition = self.config.columns_dict[field_name]
+
+            today = DateTime.today_date(english_format=True)
+
+            match field_def.computed:
+                case 'created_date':
+                    if topic_action == TopicAction.NEW:
+                        topic[field_name] = today
+                case 'edit_date':
+                    topic[field_name] = today
+                case _:
+                    pass
+
+        return topic
 
     def update_table_row(
         self, col_index: int, field: FieldDefinition, value: str

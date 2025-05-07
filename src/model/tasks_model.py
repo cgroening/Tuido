@@ -80,7 +80,7 @@ class Tasks(metaclass=Singleton):
 
         self.load_from_file()
 
-    def load_from_file(self):
+    def load_from_file(self) -> None:
         """
         Loads the tasks from the JSON file.
         """
@@ -95,7 +95,7 @@ class Tasks(metaclass=Singleton):
 
         self.generate_tasks_dict(tasks_raw)
 
-    def generate_tasks_dict(self, tasks_raw: dict):
+    def generate_tasks_dict(self, tasks_raw: dict) -> None:
         """
         Generates a dictionary of tasks from the raw data.
 
@@ -122,6 +122,9 @@ class Tasks(metaclass=Singleton):
         Args:
             column_name: The name of the column the task belongs to.
             task_dict: The raw data dictionary containing task information.
+
+        Returns:
+            A Task object created from the raw data.
         """
         return Task(
             column_name=column_name,
