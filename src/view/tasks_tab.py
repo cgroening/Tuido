@@ -222,10 +222,22 @@ class TasksTab(Static):
             end_date_text, end_date_style = self.end_date_text_and_style(task)
 
             list_item = ListItem(
+                # Description
                 Static(Text(task.description, style='bold')),
-                Static(),
-                Static(Text('↑' + start_date_text, style=start_date_style)),
-                Static(Text('↓' + end_date_text, style=end_date_style)),
+
+                # Empty line if start date or end date is set
+                *[Static()] if start_date_text is not None
+                            or end_date_text is not None else [],
+
+                # Start date
+                *([Static(Text(
+                    '▶ ' + start_date_text, style=start_date_style
+                ))] if start_date_text is not None else []),
+
+                # End date
+                *([Static(Text(
+                    '◼ ' + end_date_text, style=end_date_style
+                ))] if end_date_text is not None else []),
             )
 
             self.set_priority_class(list_item, task)
@@ -233,7 +245,7 @@ class TasksTab(Static):
 
         return list_items
 
-    def start_date_text_and_style(self, task: Task) -> tuple[str, str]:
+    def start_date_text_and_style(self, task: Task) -> tuple[str | None, str]:
         """
         Returns the text and style for the start date of a task.
 
@@ -246,12 +258,13 @@ class TasksTab(Static):
             - Red: if the start date is in the past (x < 0) and end date is
                 in the past, too.
 
-        If the date is not set, it returns '---' as the text and an empty style.
+        If the date is not set, it returns None for the text and an empty
+        style string.
 
         Args:
             task: The task object.
         """
-        start_date_text = ' ---'
+        start_date_text = None
         start_date_style = ''
 
         if task.start_date is not None and task.start_date != '':
@@ -266,7 +279,7 @@ class TasksTab(Static):
 
         return start_date_text, start_date_style
 
-    def end_date_text_and_style(self, task: Task) -> tuple[str, str]:
+    def end_date_text_and_style(self, task: Task) -> tuple[str | None, str]:
         """
         Returns the text and style for the end date of a task.
 
@@ -278,12 +291,13 @@ class TasksTab(Static):
             - Yellow: if the date is today (x = 0)
             - Red: if the date is in the past (x < 0)
 
-        If the date is not set, it returns '---' as the text and an empty style.
+        If the date is not set, it returns None for the text and an empty
+        style string.
 
         Args:
             task: The task object.
         """
-        end_date_text = ' ---'
+        end_date_text = None
         end_date_style = ''
 
         if task.end_date is not None and task.end_date != '':

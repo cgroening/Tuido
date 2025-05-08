@@ -1,12 +1,6 @@
 {
     "inbox": [
         {
-            "description": "Also important",
-            "priority": 1,
-            "start_date": "2025-05-01",
-            "end_date": "2025-05-01"
-        },
-        {
             "description": "My First Task",
             "priority": 1,
             "start_date": "2025-05-01",
@@ -23,6 +17,12 @@
             "priority": 3,
             "start_date": "2025-05-05",
             "end_date": "2025-05-05"
+        },
+        {
+            "description": "Also important",
+            "priority": 1,
+            "start_date": "2025-05-01",
+            "end_date": "2025-05-01"
         }
     ],
     "today": [
@@ -33,25 +33,15 @@
             "end_date": ""
         },
         {
-            "description": "Kein Ende",
-            "priority": 3,
-            "start_date": "2025-05-09",
-            "end_date": ""
-        }
-    ],
-    "tomorrow": [
-        {
             "description": "Kein Start",
             "priority": 2,
             "start_date": "",
             "end_date": "2025-06-01"
-        }
-    ],
-    "done": [
+        },
         {
-            "description": "Ich bin der Neue",
-            "priority": 2,
-            "start_date": "2025-05-10",
+            "description": "Kein Ende",
+            "priority": 3,
+            "start_date": "2025-05-09",
             "end_date": ""
         }
     ]

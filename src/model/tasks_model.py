@@ -2,7 +2,9 @@ import enum
 import logging
 import json
 import os
+from datetime import datetime
 from dataclasses import dataclass
+from typing import Any
 
 from pylightlib.msc.DateTime import DateTime    # type: ignore
 from pylightlib.msc.Singleton import Singleton  # type: ignore
@@ -110,9 +112,25 @@ class Tasks(metaclass=Singleton):
                 )
                 self.tasks[column_name].append(task)
 
-        # Sort the tasks by priority
-        for column_name, tasks_list in self.tasks.items():
-            tasks_list.sort(key=lambda task: task.priority.value)
+        self.sort_tasks()
+
+    def sort_tasks(self) -> None:
+        """
+        Sorts the tasks in each column by priority, start date (missing goes
+        to end), end date (missing goes to end) and description.
+        and description.
+        """
+        MAX_DATE = datetime(3000, 1, 1).timestamp()
+
+        for _, tasks_list in self.tasks.items():
+            tasks_list.sort(key=lambda task: (
+                task.priority.value,
+                DateTime.date_to_timestamp(task.start_date, english_format=True)
+                    or MAX_DATE,
+                DateTime.date_to_timestamp(task.end_date, english_format=True)
+                    or MAX_DATE,
+                task.description.lower()
+            ))
 
     def create_task_object_from_raw_data(self, column_name: str,
                                          task_dict: dict[str, str]) -> Task:
@@ -219,10 +237,33 @@ class Tasks(metaclass=Singleton):
         else:
             return None
 
+    def save_to_file(self) -> None:
+        """
+        Saves the tasks to the JSON file.
+        """
+        self.sort_tasks()
+        cleaned_tasks_dict = self.get_cleaned_tasks_dict()
 
+        with open(self.json_path, 'w', encoding='utf-8') as file:
+            json.dump(cleaned_tasks_dict, file, indent=4)
 
+        logging.info(f'Saved tasks to {self.json_path}.')
 
+    def get_cleaned_tasks_dict(self) -> dict[str, list[dict[str, str | int]]]:
+        """
+        Returns a cleaned version of the tasks dictionary.
 
-
-
-
+        The cleaned version contains only the not computed fields for each task.
+        """
+        cleaned_tasks_dict = {}
+        for column_name, tasks_list in self.tasks.items():
+            cleaned_tasks_dict[column_name] = [
+                {
+                    'description': task.description,
+                    'priority':    task.priority.value,
+                    'start_date':  task.start_date,
+                    'end_date':    task.end_date
+                }
+                for task in tasks_list
+            ]
+        return cleaned_tasks_dict

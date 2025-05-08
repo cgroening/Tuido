@@ -108,7 +108,9 @@ class TasksController:
 
         self.tasks_model.add_task_to_dict_from_raw_data(column_name, task_raw)
 
-        # TODO: SAVE MODEL TO FILE
+        # SAVE MODEL TO FILE
+
+        self.tasks_model.save_to_file()
 
 
         # view
@@ -173,9 +175,9 @@ class TasksController:
         self.tasks_model.tasks[target_column_name].append(task_to_move)
         self.tasks_model.tasks[target_column_name].sort(key=lambda task: task.priority.value)
 
-        # TODO: SAVE MODEL TO FILE
+        self.tasks_model.save_to_file()
 
-        # Update the view
+        # Update the source and target list views
         self.recreate_list_view(source_column_name)
         self.recreate_list_view(target_column_name)
 
@@ -206,6 +208,7 @@ class TasksController:
         if selected_task_index is not None:
             self.tasks_model.delete_task(column_name, selected_task_index)
 
-            # TODO: SAVE MODEL TO FILE
+
+            self.tasks_model.save_to_file()
 
             self.recreate_list_view(column_name)

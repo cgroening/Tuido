@@ -108,8 +108,8 @@ class TuidoApp(App):
         Binding(key='f1', key_display='F1', action='topics_new',
                 description='New',
                 tooltip='Create a new topic'),
-        Binding(key='f2', key_display='F2', action='topics_focus_list',
-                description='List',
+        Binding(key='f2', key_display='F2', action='topics_focus_table',
+                description='Table',
                 tooltip='Focus the topic list'),
         Binding(key='f5', key_display='F5', action='topics_save',
                 description='Save',
@@ -485,6 +485,7 @@ class TuidoApp(App):
         """
         table = self.query_one('#topics_table', expect_type=DataTable)
         self.set_focus(table)
+        self.notify('Topics table focused!')
 
     def action_topics_save(self) -> None:
         """
