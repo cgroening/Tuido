@@ -38,6 +38,7 @@ The Topics Tab provided a user-friendly interface for managing topics. It is com
 
    Shows all details of a topic
 
+
 The structure is dynamically based on configurable fields. The supported field types are:
 
 - XXX
@@ -49,6 +50,7 @@ Example for a config.yaml:
 ```yaml
 XXX
 ```
+
 
 ### Task management
 
