@@ -75,13 +75,6 @@ class Topic(metaclass=Singleton):
 
         logging.info(f'Saved {len(self.data)} topics to {self.json_path}.')
 
-    # TODO: Clean up
-    # def sort_by_id(self) -> None:
-    #     """
-    #     Sorts the topics by ID.
-    #     """
-    #     self.data.sort(key=lambda x: x['id'], reverse=True)
-
     def create_new_topic(self, topic: dict[str, str | int | float | bool]) \
     -> None:
         """

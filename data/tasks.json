@@ -1,61 +1,49 @@
 {
     "inbox": [
         {
-            "description": "Also important",
+            "description": "Research user onboarding best practices",
             "priority": 1,
-            "start_date": "2025-05-01",
-            "end_date": "2025-05-01"
+            "start_date": "2025-06-01",
+            "end_date": "2025-06-02"
         },
         {
-            "description": "My First Task",
+            "description": "Draft wireframes for new dashboard layout",
             "priority": 1,
-            "start_date": "2025-05-01",
-            "end_date": "2025-05-10"
+            "start_date": "2025-06-03",
+            "end_date": "2025-06-06"
         },
         {
-            "description": "Another Task",
+            "description": "Define API endpoints for user authentication",
             "priority": 2,
-            "start_date": "2025-05-11",
-            "end_date": "2025-05-20"
-        },
-        {
-            "description": "Not so important Task",
-            "priority": 3,
             "start_date": "2025-05-05",
-            "end_date": "2025-05-05"
+            "end_date": "2025-05-07"
         },
         {
-            "description": "aaaaaa",
+            "description": "Collect feedback from beta testers",
+            "priority": 2,
+            "start_date": "2025-05-08",
+            "end_date": "2025-05-09"
+        },
+        {
+            "description": "Review latest UI/UX mockups",
+            "priority": 2,
+            "start_date": "",
+            "end_date": ""
+        },
+        {
+            "description": "Plan sprint review meeting",
             "priority": 3,
             "start_date": "",
             "end_date": ""
         },
         {
-            "description": "aaaaaa",
+            "description": "Update README with latest setup instructions",
             "priority": 3,
             "start_date": "",
             "end_date": ""
         },
         {
-            "description": "dfgdfgdfg",
-            "priority": 3,
-            "start_date": "",
-            "end_date": ""
-        },
-        {
-            "description": "gdfgdfg",
-            "priority": 3,
-            "start_date": "",
-            "end_date": ""
-        },
-        {
-            "description": "ggggggg",
-            "priority": 3,
-            "start_date": "",
-            "end_date": ""
-        },
-        {
-            "description": "gggggggg",
+            "description": "Write unit tests for login module",
             "priority": 3,
             "start_date": "",
             "end_date": ""
@@ -63,32 +51,50 @@
     ],
     "today": [
         {
-            "description": "Kein Start, Kein Ende",
-            "priority": 2,
+            "description": "Fix critical bug in payment processing flow",
+            "priority": 1,
+            "start_date": "2025-05-12",
+            "end_date": "2025-05-12"
+        },
+        {
+            "description": "Prepare changelog for v2.1.0 release",
+            "priority": 3,
             "start_date": "",
             "end_date": ""
         }
     ],
     "tomorrow": [
         {
-            "description": "Kein Start",
-            "priority": 2,
-            "start_date": "",
-            "end_date": "2025-06-01"
+            "description": "Deploy staging environment for QA team",
+            "priority": 1,
+            "start_date": "2025-05-13",
+            "end_date": "2025-05-13"
         },
         {
-            "description": "Kein Ende",
+            "description": "Send update email to stakeholders",
+            "priority": 2,
+            "start_date": "",
+            "end_date": "2025-05-13"
+        },
+        {
+            "description": "Test mobile responsiveness of landing page",
             "priority": 3,
-            "start_date": "2025-05-09",
+            "start_date": "2025-05-13",
             "end_date": ""
         }
     ],
     "done": [
         {
-            "description": "Ich bin der Neue",
+            "description": "Set up project repository and CI/CD pipeline",
+            "priority": 1,
+            "start_date": "2025-04-29",
+            "end_date": "2025-05-01"
+        },
+        {
+            "description": "Initial commit with base app structure",
             "priority": 2,
-            "start_date": "2025-05-10",
-            "end_date": ""
+            "start_date": "2025-04-28",
+            "end_date": "2025-04-28"
         }
     ]
 }

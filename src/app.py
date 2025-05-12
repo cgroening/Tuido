@@ -70,26 +70,28 @@ class TuidoApp(App):
                 tooltip='Quit the app',
                 show=False),
 
-        Binding(key='f11', key_display='F11',
-                action='app_copy_selection_to_clipboard',
-                description='Copy',
-                tooltip='Copy selection to clipboard'),
-
         # Tasks controller
         Binding(key='f1', key_display='F1', action='tasks_new',
                 description='New',
                 tooltip='Create a new task'),
         Binding(key='f2', key_display='F2', action='tasks_edit',
-                description='EDIT',
+                description='Edit',
                 tooltip='Edit the currently selected task'),
         Binding(key='f3', key_display='F3', action='tasks_left',
-                description='←',
+                description='Move ←',
                 tooltip='Move the currently selected task left'),
         Binding(key='f4', key_display='F4', action='tasks_right',
-                description='→',
+                description='Move →',
                 tooltip='Move the currently selected task right'),
-        Binding(key='shift+f8', key_display='⇧F8', action='tasks_delete',
-                description='DEL',
+
+        # Woraround: Ensures the correct order of the bindings in the following
+        # tabs
+        Binding(key='f5', key_display='F5', action='', show=False),
+        Binding(key='f6', key_display='F6', action='', show=False),
+        Binding(key='f7', key_display='F7', action='', show=False),
+
+        Binding(key='f8', key_display='F8', action='tasks_delete',
+                description='Del',
                 tooltip='Delete the currently selected task'),
         # Binding(key='f5', key_display='F5', action='tasks_today',
         #         description='Today',
@@ -114,38 +116,32 @@ class TuidoApp(App):
         Binding(key='f5', key_display='F5', action='topics_save',
                 description='Save',
                 tooltip='Save the currently selected topic'),
-        Binding(key='f10', key_display='F10', action='topics_copy_clipboard',
-                description='Copy',
-                tooltip='Copy the content of the selected input to ' + \
-                             'the clipboard'),
-        Binding(key='shift+f5', key_display='⇧F5', action='topics_discard',
+        Binding(key='f7', key_display='F7', action='topics_discard',
                 description='Discard',
                 tooltip='Discard the changes made on the current topic'),
-        Binding(key='shift+f8', key_display='⇧F8', action='topics_delete',
-                description='Delete',
+        Binding(key='f8', key_display='F8', action='topics_delete',
+                description='Del',
                 tooltip='Delete the currently selected topic'),
 
         # Notes controller
-        Binding(key='f1', key_display='F1', action='notes_do_something',
-                description='Do something',
-                tooltip='XXX'),
+        # Binding(key='f1', key_display='F1', action='notes_do_something',
+        #         description='Do something',
+        #         tooltip='XXX'),
         Binding(key='f2', key_display='F2', action='notes_show_textarea',
-            description='TXT',
+            description='Text',
             tooltip='Show the textarea and markdown'),
         Binding(key='f3', key_display='F3', action='notes_show_md',
-            description='MD',
+            description='Markdown',
             tooltip='Show the textarea and markdown'),
         Binding(key='f4', key_display='F4', action='notes_show_textarea_and_md',
-            description='TXT+MD',
+            description='Text+Md',
             tooltip='Show the textarea and markdown'),
 
-        # TextOps controller
-        Binding(key='f1', key_display='F1', action='textops_insert',
-                description='Insert',
-                tooltip='Insert text from the clipboard'),
-        Binding(key='f12', key_display='F12', action='textops_copy',
+        # Global
+        Binding(key='f11', key_display='F11',
+                action='app_copy_selection_to_clipboard',
                 description='Copy',
-                tooltip='Copy the content of the textarea to the clipboard'),
+                tooltip='Copy selection to clipboard'),
     ]
 
 
@@ -236,6 +232,9 @@ class TuidoApp(App):
         See also:
             https://textual.textualize.io/guide/actions/#dynamic-actions
         """
+        if action == '':
+            return False
+
         # List of global actions that are valid for all tabs
         GLOBAL_ACTIONS = ['app', 'quit', 'copy_to_clipboard',
                           'focus_next', 'focus_previous']

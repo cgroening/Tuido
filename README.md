@@ -1,6 +1,8 @@
-# Tuido
+# Tuido – Efficient Day Planning in your Terminal
 
 Tuido is a simple productivity application that provides a text user interface (TUI) for managing topics, tasks and notes. The fields of the topics can be defined by the user. All data are saved locally – no cloud requirement.
+
+![Screenshot](screenshots/app_windows.png)
 
 The components are built using the Textual library, offering a modern terminal GUI experience focused on clarity and interactivity.
 
