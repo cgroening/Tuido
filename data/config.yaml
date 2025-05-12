@@ -1,11 +1,11 @@
 fields:
   -
     - name: "topic"
-      caption: "Thema"
+      caption: "Topic"
       type: "string"
   -
     - name: "description"
-      caption: "Beschreibung"
+      caption: "Description"
       type: "string"
       lines: 3
       show_in_table: false
@@ -13,10 +13,10 @@ fields:
     - name: "status"
       caption: "Status"
       type: "select"
-      options: ["Offen", "In Arbeit", "Fertig"]
+      options: ["Open", "In Progress", "Done"]
       # tab_width: 11
     - name: "created"
-      caption: "Erstellt"
+      caption: "Created"
       type: "date"
       # tab_width: 12
       input_width: 16
@@ -24,7 +24,7 @@ fields:
       computed: "created_date"
       show_in_table: false
     - name: "edited"
-      caption: "Bearbeitet"
+      caption: "Edited"
       type: "date"
       # tab_width: 12
       input_width: 16
@@ -33,17 +33,17 @@ fields:
       show_in_table: false
   -
     - name: "actions"
-      caption: "Aktionen"
+      caption: "Actions"
       type: "string"
       lines: -1
       show_in_table: false
 
 task_columns:
   - name: "inbox"
-    caption: "Eingang"
+    caption: "Inbox"
   - name: "today"
-    caption: "Heute"
+    caption: "Today"
   - name: "tomorrow"
-    caption: "Morgen"
+    caption: "Tomorrow"
   - name: "done"
-    caption: "Erledigt"
+    caption: "Done"

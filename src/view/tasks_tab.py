@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalScroll, VerticalGroup
 from textual.events import Key, Focus, Blur
 from textual.reactive import reactive
 from textual.widgets import Static, ListView, ListItem, Label
@@ -178,12 +178,12 @@ class TasksTab(Static):
 
                 with Vertical():
                     # Header for the column
-                    text = Text(f'{self.column_captions[column_name]}:',
-                                style='bold underline')
+                    text = Text(f'{self.column_captions[column_name]}',
+                                style='bold')
                     yield(Label(text, classes='task_column_header'))
 
                     # ListView for the column
-                    vertical_scroll = VerticalScroll()
+                    vertical_scroll = VerticalScroll(classes='task_column_vscroll')
                     with vertical_scroll:
                         list_view = CustomListView(vertical_scroll, self,
                                                    column_name, *list_items)
@@ -272,7 +272,8 @@ class TasksTab(Static):
 
             if task.days_to_start > 0:
                 start_date_style = 'green'
-            elif task.days_to_start < 0 and task.days_to_end < 0:
+            elif (task.end_date is not None and task.end_date != '') \
+                 and (task.days_to_start < 0 and task.days_to_end < 0):
                 start_date_style = 'red'
             elif task.days_to_start <= 0:
                 start_date_style = 'yellow'

@@ -27,7 +27,9 @@ class TasksController:
     app: App
     task_action: TaskAction
 
-    def __init__(self, config: Config, tasks_model: Tasks, main_tabs: MainTabs, app: App):
+    def __init__(
+        self, config: Config, tasks_model: Tasks, main_tabs: MainTabs, app: App
+    ):
         """
         Initializes the TasksController.
 
@@ -80,117 +82,117 @@ class TasksController:
             input_form.set_input_values(task)
 
     def save_task(self, message: TasksInputPopup.Submit) -> None:
-        logging.info('Saving task:')
-        logging.info(f'Saving task: {message.description}')
-        logging.info(f'Saving task: {message.priority}')
-        logging.info(f'Saving task: {message.start_date}')
-        logging.info(f'Saving task: {message.end_date}')
+        """
+        Saves the task data from the input form to the tasks model
+        and updates the view.
 
-        # model
+        This method is called when the user submits the task form.
+
+        Args:
+            message: The message containing the task data from the input form.
+        """
+        tasks_model = self.tasks_model
+        # Get the task data from the input form
         task_raw = {
             'description': message.description,
-            'priority':    self.tasks_model.priority_str_to_num(message.priority),
+            'priority':    tasks_model.priority_str_to_num(message.priority),
             'start_date':  message.start_date,
             'end_date':    message.end_date
         }
 
+        # Determine the task action which was set when the form was opened
         if self.task_action == TaskAction.NEW:
+            # New tasks will always go to the first column/inbox
             column_name = self.config.task_column_names[0]
-
         elif self.task_action == TaskAction.EDIT:
-
             column_name = self.main_tabs.tasks_tab.selected_column_name
             selected_task_index = self.main_tabs.tasks_tab.selected_task_index
 
+            # Remove edited task from the current column
+            tasks_model.delete_task(column_name, selected_task_index)
 
-
-            self.tasks_model.delete_task(column_name, selected_task_index)
-
-        self.tasks_model.add_task_to_dict_from_raw_data(column_name, task_raw)
-
-        # SAVE MODEL TO FILE
-
-        self.tasks_model.save_to_file()
-
-
-        # view
-
+        # Add new or edited task to the tasks model and refresh the list view
+        tasks_model.add_task_to_dict_from_raw_data(column_name, task_raw)
+        tasks_model.save_to_file()
         self.recreate_list_view(column_name)
 
-
-
-
     def recreate_list_view(self, column_name: str) -> None:
+        """
+        Recreates the list view for the specified column name.
 
-        # view
+        Args:
+            column_name: The name of the column to recreate the list view for.
+        """
+        # Remove all items
         tasks_tab = self.main_tabs.tasks_tab
         list_view: ListView = tasks_tab.list_views[column_name]
         list_view.clear()
 
+        # Create a new instance of ListViewItem for each task in the column
         list_items = tasks_tab.create_list_items(column_name)
-
         for list_item in list_items:
             list_view.append(list_item)
-
         tasks_tab.set_can_focus()
 
-
-
     def move_task(self, move_direction: TaskMoveDirection) -> None:
+        """
+        Moves the selected task to the left or right column.
+
+        Args:
+            move_direction: The direction to move the task (left or right).
+        """
+        # Determine the index of the source column
         source_column_name = self.main_tabs.tasks_tab.selected_column_name
-
         column_names = self.config.task_column_names
-
-        # get index of the source column
         source_column_index = column_names.index(source_column_name)
 
+        # Determine the index and name of the target column
         if move_direction == TaskMoveDirection.LEFT:
-            target_column_index = max(source_column_index - 1, 0)
+            target_column_index = \
+                max(source_column_index - 1, 0)
         elif move_direction == TaskMoveDirection.RIGHT:
-            target_column_index = min(source_column_index + 1, len(column_names) - 1)
+            target_column_index = \
+                min(source_column_index + 1, len(column_names) - 1)
 
         target_column_name = self.config.task_column_names[target_column_index]
 
-        logging.info(f'Moving task from {source_column_name} to {target_column_name}')
-
-
+        # Abort conditions
+        tasks_model = self.tasks_model
         if source_column_index == target_column_index:
             return
 
-        if len(self.tasks_model.tasks[source_column_name]) == 0:
+        if len(tasks_model.tasks[source_column_name]) == 0:
             return
-
 
         # Remove task from source column
         selected_task_index = self.main_tabs.tasks_tab.selected_task_index
-        task_to_move = self.tasks_model.tasks[source_column_name][selected_task_index]
-        self.tasks_model.delete_task(source_column_name, selected_task_index)
+        task_to_move = tasks_model.tasks[source_column_name] \
+                           [selected_task_index]
+        tasks_model.delete_task(source_column_name, selected_task_index)
 
         # Add task to target column
         task_to_move.column_name = target_column_name
 
-        if target_column_name not in self.tasks_model.tasks:
-            self.tasks_model.tasks[target_column_name] = []
+        if target_column_name not in tasks_model.tasks:
+            tasks_model.tasks[target_column_name] = []
 
-        self.tasks_model.tasks[target_column_name].append(task_to_move)
-        self.tasks_model.tasks[target_column_name].sort(key=lambda task: task.priority.value)
-
-        self.tasks_model.save_to_file()
+        tasks_model.tasks[target_column_name].append(task_to_move)
+        tasks_model.sort_tasks()
+        tasks_model.save_to_file()
 
         # Update the source and target list views
         self.recreate_list_view(source_column_name)
         self.recreate_list_view(target_column_name)
 
-        # Select the moved task in the target column
-        target_list_view: ListView = self.main_tabs.tasks_tab.list_views[target_column_name]
+        # Find the index of the moved task in the target column select it
+        list_views: list[ListView] = self.main_tabs.tasks_tab.list_views
+        target_list_view: ListView = list_views[target_column_name]
 
-        # Find the index of the moved task in the target column
         target_task_index = 0
         for i, task in enumerate(self.tasks_model.tasks[target_column_name]):
             if task == task_to_move:
                 target_task_index = i
                 break
-
 
         target_list_view.index = target_task_index
         target_list_view.focus()
@@ -203,12 +205,7 @@ class TasksController:
         column_name = tasks_tab.selected_column_name
         selected_task_index = tasks_tab.selected_task_index
 
-        logging.info(f'Deleting task from {column_name} at index {selected_task_index}')
-
         if selected_task_index is not None:
             self.tasks_model.delete_task(column_name, selected_task_index)
-
-
             self.tasks_model.save_to_file()
-
             self.recreate_list_view(column_name)
