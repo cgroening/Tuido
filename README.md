@@ -1,6 +1,6 @@
 # Tuido – Efficient Day Planning in your Terminal
 
-> Tuido is a simple productivity application that provides a text user interface (TUI) for managing tasks, topics and notes. The Kanban columns of the task view and the fields of the topics can be defined by the user. All data are saved locally – no cloud requirement.
+Tuido is a simple productivity application that provides a text user interface (TUI) for managing tasks, topics and notes. The Kanban columns of the task view and the fields of the topics can be defined by the user. All data are saved locally – no cloud requirement.
 
 ![Screenshot](screenshots/app_windows.png)
 
@@ -15,8 +15,7 @@ Use Tuido for everything that is relevant today but can be deleted in the next f
 > [!warning]
 > This application is under development. It's not yet suitable for a productive environment.
 
-> [!tip] Current Status
-> See the [Roadmap](#roadmap) and [Todo list](TODO.md) to gain an insight into the current project status.
+See the [Roadmap](#roadmap) and [Todo list](TODO.md) to gain an insight into the current project status.
 
 ## Core Features
 
