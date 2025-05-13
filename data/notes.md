@@ -12,7 +12,7 @@
 - User feedback: some say onboarding feels *too long* — UX issue?
 - What's better for mobile: **GraphQL** or **REST**?
 
-## ⚠️ Urgent / Follow-up
+## ⚠️  Urgent / Follow-up
 
 - **Funding proposal deadline → May 18**
 - Backup DB before Friday’s deployment!
