@@ -1,17 +1,23 @@
 import logging  # type: ignore # noqa
 
 from textual.app import ComposeResult
-from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll, Vertical
+from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll
 from textual.widgets import Static, DataTable, Input, Label, Select, TextArea
+from textual.widgets._data_table import ColumnKey, Column
 from rich.text import Text  # type: ignore # noqa
 
-from model.config_model import Config  # type: ignore
+from model.config_model import Config, FieldDefinition  # type: ignore
 
 
 class TopicsDataTable(DataTable):
     """
     DataTable for topics.
+
+    Attributes:
+        flexible_columns: List of column keys that should be flexible in width
+            (will be adjusted according to window width).
     """
+    flexible_columns: list[ColumnKey] = []
 
     def __init__(self, **kwargs):
         """
@@ -20,6 +26,56 @@ class TopicsDataTable(DataTable):
         super().__init__(**kwargs)
         self.id = 'topics_table'
         self.cursor_type = 'row'
+
+    def on_resize(self) -> None:
+        """
+        Handles the resize event of the DataTable.
+
+        Adjusts the widths of the flexible columns based on the new size of
+        the table.
+        """
+        table_width = self.size.width - 10
+        fixed_widths = self.get_fixed_column_widths()
+        self.adjust_flexible_columns(table_width, fixed_widths)
+        self.refresh()
+
+    def get_fixed_column_widths(self) -> int:
+        """
+        Returns the total width of all fixed-width columns in the table.
+
+        This is used to calculate the available width for flexible columns.
+
+        Returns:
+            The total width of all fixed-width columns.
+        """
+        fixed_widths = 0
+
+        for column_key in self.columns:
+            column: Column = self.columns[column_key]
+
+            if column_key not in self.flexible_columns:
+                fixed_widths += column.width
+
+        return fixed_widths
+
+    def adjust_flexible_columns(self, table_width: int, fixed_width: int) \
+    -> None:
+        """
+        Adjusts the widths of the flexible columns based on the available
+        width in the table.
+
+        Args:
+            table_width: The total width of the table.
+            fixed_width: The total width of all fixed-width columns.
+        """
+        for column_key in self.columns:
+            column: Column = self.columns[column_key]
+
+            if column_key in self.flexible_columns:
+                column.auto_width = False
+                column.width = int(
+                    (table_width - fixed_width) / len(self.flexible_columns)
+                )
 
     def get_current_id(self) -> int:
         """

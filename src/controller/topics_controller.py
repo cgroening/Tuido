@@ -81,7 +81,11 @@ class TopicsController(metaclass=Singleton):
         # Add user defined columns
         for col in self.config.columns:
             if col.show_in_table:
-                table.add_column(col.caption)
+                if col.table_column_width > 0:
+                    table.add_column(col.caption, width=col.table_column_width)
+                else:
+                    table.flexible_columns.append(table.add_column(col.caption))
+
 
     def add_table_rows(self, table: DataTable) -> None:
         """
@@ -92,12 +96,15 @@ class TopicsController(metaclass=Singleton):
             display_columns = []
 
             # ID
-            display_columns.append(Text(str(row["id"]), justify="right"))
+            display_columns.append(Text(str(row['id']), justify='right'))
 
             # User defined columns
             for col in self.config.columns:
                 if col.show_in_table:
-                    display_columns.append(row[col.name])  # type: ignore
+                    if col.name in row:
+                        display_columns.append(row[col.name])  # type: ignore
+                    else:
+                        display_columns.append(Text())
             table.add_row(*display_columns)
 
         self.sort_table_by_id(table)

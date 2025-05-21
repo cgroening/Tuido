@@ -38,8 +38,8 @@ class MainTabs(Container):
         """
         # Tab labels
         tabs = Tabs(
-            Tab('Tasks', id='tasks'),
             Tab('Topics', id='topics'),
+            Tab('Tasks', id='tasks'),
             Tab('Notes', id='notes'),
             id='main_tabs',
         )

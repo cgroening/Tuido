@@ -30,7 +30,7 @@ class FieldDefinition:
             be created, otherwise a TextArea.
         options: The selectable items if the field type is `FieldType.LIST`.
         show_in_table: Whether to show the field in the table.
-        column_width: The width of the column in the table.
+        table_column_width: The width of the column in the table.
         input_width: The width of the input field.
         read_only: Indicates whether the field is read only.
         computed: Name of the computed value the field gets if the topic is
@@ -42,7 +42,7 @@ class FieldDefinition:
     lines: int
     options: list[str | int | float | bool] | None = None
     show_in_table: bool = True
-    column_width: int | None = None
+    table_column_width: int = -1 # | None = None
     input_width: int | None = None
     read_only: bool = False
     computed: str | None = None
@@ -111,8 +111,12 @@ class Config(metaclass=Singleton):
                     type         =self.parse_field_type(col['type']),
                     lines        =col.get('lines', 1),
                     options      =col.get('options', []),
-                    show_in_table=col.get('show_in_table', True),
-                    column_width =col.get('column_width', None),
+                    show_in_table=self.parse_show_in_table(
+                        col.get('table_column_width')
+                    ),
+                    table_column_width=self.parse_table_column_width(
+                        col.get('table_column_width')
+                    ),
                     input_width  =col.get('input_width', None),
                     read_only    =col.get('read_only', False),
                     computed     =col.get('computed', None)
@@ -155,3 +159,13 @@ class Config(metaclass=Singleton):
                 return FieldType.DATE
             case _:
                 raise ValueError(f"Unknown field type: {type_str}")
+
+    def parse_show_in_table(self, table_column_width: str | None) -> bool:
+        if table_column_width is not None and int(table_column_width) >= 0:
+            return True
+        return False
+
+    def parse_table_column_width(self, table_column_width: str) -> int:
+        if table_column_width is not None and int(table_column_width) >= 0:
+            return int(table_column_width)
+        return -1

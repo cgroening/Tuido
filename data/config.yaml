@@ -3,40 +3,39 @@ fields:
     - name: "topic"
       caption: "Topic"
       type: "string"
+      table_column_width: 0
   -
     - name: "description"
       caption: "Description"
       type: "string"
       lines: 3
-      show_in_table: false
   -
     - name: "status"
       caption: "Status"
       type: "select"
       options: ["Open", "In Progress", "Done"]
-      # tab_width: 11
+      table_column_width: 11
+      # table_column_width: 0
     - name: "created"
       caption: "Created"
       type: "date"
-      # tab_width: 12
+      table_column_width: 10
+      # table_column_width: 0
       input_width: 16
       read_only: true
       computed: "created_date"
-      show_in_table: false
     - name: "edited"
       caption: "Edited"
       type: "date"
-      # tab_width: 12
+      table_column_width: 12
       input_width: 16
       read_only: true
       computed: "edit_date"
-      show_in_table: false
   -
     - name: "actions"
       caption: "Actions"
       type: "string"
       lines: -1
-      show_in_table: false
 
 task_columns:
   - name: "inbox"
