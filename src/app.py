@@ -150,7 +150,7 @@ class TuidoApp(App):
         Initializes the app.
         """
         super().__init__()
-        # self.COMMAND_PALETTE_DISPLAY = None
+
         # Config
         self.config = Config('data/config.yaml')
 
