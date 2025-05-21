@@ -1,5 +1,7 @@
+import argparse
 import logging
 from pprint import pprint  # type: ignore # noqa
+
 
 from textual import work, events
 from textual.app import App, ComposeResult
@@ -40,7 +42,6 @@ class TuidoApp(App):
         notes_controller: The controller object for managing notes.
         main_tabs: The main tabs widget for the app.
     """
-
     TITLE = "Tuido"
     CSS_PATH = 'view/app_style.css'
     config: Config
@@ -148,16 +149,26 @@ class TuidoApp(App):
     def __init__(self) -> None:
         """
         Initializes the app.
+
+        Args:
+            args: The command line arguments.
         """
         super().__init__()
 
+        # Get data folder from command line arguments
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--data_folder', type=str)
+        args = parser.parse_args()
+        data_folder = args.data_folder if args.data_folder \
+                                       else 'data'
+
         # Config
-        self.config = Config('data/config.yaml')
+        self.config = Config(f'{data_folder}/config.yaml')
 
         # Models
-        self.tasks_model = Tasks('data/tasks.json')
-        self.topics_model = Topic('data/topics.json')
-        self.notes_model = Notes('data/notes.md')
+        self.tasks_model = Tasks(f'{data_folder}/tasks.json')
+        self.topics_model = Topic(f'{data_folder}/topics.json')
+        self.notes_model = Notes(f'{data_folder}/notes.md')
 
         # Views
         self.main_tabs = MainTabs()

@@ -1,3 +1,4 @@
+import argparse
 import logging
 from app import TuidoApp
 

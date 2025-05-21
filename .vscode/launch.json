@@ -19,6 +19,7 @@
             "console": "integratedTerminal",
             // "console": "externalTerminal",
             // "args": ["--dev"]
+            "args": ["--data_folder", "data_ignore"]
         }
         // {
         //     "name": "Run: textual --dev main.py",
