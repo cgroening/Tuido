@@ -1,4 +1,4 @@
-from textual.app import ComposeResult
+from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.reactive import reactive
 from textual.widgets import Tabs, Tab
@@ -16,19 +16,30 @@ class MainTabs(Container):
     Main tabs container
 
     Attributes:
+        tudio_app: The main application instance.
         current_tab: The currently selected tab.
         topics_tab: The topics tab widget.
+        tasks_tab: The tasks tab widget.
+        notes_tab: The notes tab widget.
     """
-    # current_tab = reactive('topics')
+    tuido_app: App
     current_tab = reactive('topics', bindings=True)
     topics_tab: TopicsTab
     tasks_tab: TasksTab
     notes_tab: NotesTab
 
 
-    def __init__(self, **kwargs):
+    def __init__(self, tuido_app: App, **kwargs):
+        """
+        Initializes the MainTabs container.
+
+        Args:
+            app: The main application instance.
+            **kwargs: Additional keyword arguments.
+        """
+        self.tasks_tab = TasksTab(tuido_app, id='tasks-tab')
         super().__init__(**kwargs)
-        self.tasks_tab = TasksTab(id='tasks-tab')
+        self.tuido_app = tuido_app
         self.topics_tab = TopicsTab(id='topics-tab', classes='hidden')
         self.notes_tab = NotesTab(id='notes-tab', classes='hidden')
 
@@ -38,8 +49,8 @@ class MainTabs(Container):
         """
         # Tab labels
         tabs = Tabs(
-            Tab('Topics', id='topics'),
             Tab('Tasks', id='tasks'),
+            Tab('Topics', id='topics'),
             Tab('Notes', id='notes'),
             id='main_tabs',
         )

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import logging
 
-from textual.app import ComposeResult
+from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll, VerticalGroup
 from textual.events import Key, Focus, Blur
 from textual.reactive import reactive
@@ -151,6 +151,7 @@ class TasksTab(Static):
     its parent container (`VerticalScroll`) instead of scrolling itself.
 
     Attributes:
+        tuido_app: The main application instance.
         list_views: A dictionary of CustomListView objects for each column.
         column_names: A list of column names.
         column_captions: A dictionary mapping column names to their captions.
@@ -159,6 +160,7 @@ class TasksTab(Static):
         selected_column_name: The name of the currently selected column.
         selected_task_index: The index of the currently selected task.
     """
+    tuido_app: App
     list_views: dict[str, CustomListView] = {}
     column_names: list[str]
     column_captions: dict[str, str]
@@ -167,6 +169,16 @@ class TasksTab(Static):
     selected_column_name: str
     selected_task_index: int
 
+
+    def __init__(self, tuido_app: App, **kwargs) -> None:
+        """
+        Initializes the TasksTab with the main application instance.
+
+        Args:
+            app: The main application instance.
+        """
+        super().__init__(**kwargs)
+        self.tuido_app = tuido_app
 
     def compose(self) -> ComposeResult:
         """
@@ -190,7 +202,8 @@ class TasksTab(Static):
                         self.list_views[column_name] = list_view
                         yield list_view
 
-        self.input_form = TasksInputPopup(id='tasks-input-popup')
+        self.input_form = TasksInputPopup(self.tuido_app, self.list_views,
+                                          id='tasks-input-popup')
         self.input_form.display = False
         yield self.input_form
 

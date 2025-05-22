@@ -1,9 +1,11 @@
+import logging
 from typing import Any
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
+from textual.binding import Binding
 from textual.message import Message
-from textual.widgets import Button, Input, Label, Select, MaskedInput
+from textual.widgets import Button, Input, Label, Select, MaskedInput, ListView
 
 from model.tasks_model import Task, TaskPriority  # type: ignore
 
@@ -17,15 +19,20 @@ class TasksInputPopup(Container):
     submit the entered data.
 
     Attributes:
+        tuido_app: The main application instance.
+        list_views: Dictionary of list views for the tasks.
         description_input: Input field for task description.
         priority_input: Dropdown for selecting task priority.
         start_date_input: Input field for start date.
         end_date_input: Input field for end date.
     """
+    tuido_app: App
+    list_views: dict[str, ListView | Any] = {}
     description_input: Input
     priority_input: Select
     start_date_input: MaskedInput
     end_date_input: MaskedInput
+
 
     class Submit(Message):
         """
@@ -38,6 +45,17 @@ class TasksInputPopup(Container):
             self.start_date = start_date
             self.end_date = end_date
             super().__init__()
+
+    def __init__(self, tuido_app: App, list_views: dict[str, ListView | Any], **kwargs) -> None:
+        """
+        Initializes the popup with a dictionary of list views.
+
+        Args:
+            list_views: A dictionary containing the list views for the tasks.
+        """
+        super().__init__(**kwargs)
+        self.tuido_app = tuido_app
+        self.list_views = list_views
 
     def compose(self) -> ComposeResult:
         """
@@ -69,15 +87,11 @@ class TasksInputPopup(Container):
                                           placeholder='YYYY-MM-DD')
         yield self.end_date_input
 
-        # with Vertical():
-        with Horizontal():
-            yield Button('Today', id='today')
-            yield Button('Tomorrow', id='tomorrow')
-
         # Submit and Cancel Button
         with Horizontal():
-            yield Button('Submit', id='submit')
-            yield Button('Cancel', id='cancel')
+            yield Button('Cancel', id='cancel', variant='error')
+            yield Label('  ')  # Spacer
+            yield Button('Submit', id='submit', variant='success')
 
     def set_input_values(self, task: Task):
         """
@@ -109,18 +123,61 @@ class TasksInputPopup(Container):
         """
         if event.button.id == 'submit':
             # Send a message with the entered data
-            self.post_message(self.Submit(
-                self.description_input.value,
-                self.priority_input.value,
-                self.start_date_input.value,
-                self.end_date_input.value
-            ))
+            self.submit_changes()
 
-            # Clear input fields
-            self.description_input.value = ''
-            self.priority_input.clear()
-            self.start_date_input.value = ''
-            self.end_date_input.value = ''
+        self.clear_and_hide()
 
-            # Hide the popup
-            self.display = False
+    def submit_changes(self):
+        """
+        Submits the changes made in the popup.
+
+        This method is called when the submit button is pressed. It sends a
+        message with the entered data and clears the input fields.
+        """
+        self.post_message(self.Submit(
+            self.description_input.value,
+            self.priority_input.value,
+            self.start_date_input.value,
+            self.end_date_input.value
+        ))
+
+        self.clear_and_hide()
+
+    def clear_and_hide(self):
+        """
+        Clears the input fields and hides the popup.
+        """
+        # Clear input fields
+        self.description_input.value = ''
+        self.priority_input.clear()
+        self.start_date_input.value = ''
+        self.end_date_input.value = ''
+
+        # Hide the popup
+        self.display = False
+
+    def on_show(self):
+        """
+        Called when the popup is shown.
+
+        Sets the flag "popup_visible" in the main application instance and makes
+        the list views not focusable.
+        """
+        self.tuido_app.popup_name = 'edit'        # type: ignore
+        self.tuido_app.footer.refresh_bindings()  # type: ignore
+
+        for list_view in self.list_views.values():
+            list_view.can_focus = False
+
+    def on_hide(self):
+        """
+        Called when the popup is hidden.
+
+        Sets the flag "popup_visible" in the main application instance and makes
+        the list views focusable again.
+        """
+        self.tuido_app.popup_name = None          # type: ignore
+        self.tuido_app.footer.refresh_bindings()  # type: ignore
+
+        for list_view in self.list_views.values():
+            list_view.can_focus = True

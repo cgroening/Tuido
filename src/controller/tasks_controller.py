@@ -24,11 +24,12 @@ class TasksController:
     config: Config
     tasks_model: Tasks
     main_tabs: MainTabs
-    app: App
+    tuido_app: App
     task_action: TaskAction
 
     def __init__(
-        self, config: Config, tasks_model: Tasks, main_tabs: MainTabs, app: App
+        self, config: Config, tasks_model: Tasks, main_tabs: MainTabs,
+        tuido_app: App
     ):
         """
         Initializes the TasksController.
@@ -42,7 +43,7 @@ class TasksController:
         self.config = config
         self.tasks_model = tasks_model
         self.main_tabs = main_tabs
-        self.app = app
+        self.tuido_app = tuido_app
 
         # Set up the tasks tab with the tasks model data
         tasks_tab = self.main_tabs.tasks_tab
@@ -61,7 +62,7 @@ class TasksController:
 
         input_form = self.main_tabs.tasks_tab.input_form
         input_form.display = True
-        self.app.set_focus(input_form.description_input)
+        self.tuido_app.set_focus(input_form.description_input)
 
         self.set_task_form_input_values()
 

@@ -13,6 +13,8 @@ from textual.containers import Vertical
 from textual.screen import ModalScreen
 from rich.text import Text  # type: ignore # noqa
 
+from pylightlib.msc.Singleton import Singleton  # type: ignore
+
 from controller.topics_controller import TopicsController
 from controller.tasks_controller import TasksController, TaskAction, TaskMoveDirection
 from controller.notes_controller import NotesController
@@ -41,6 +43,9 @@ class TuidoApp(App):
         topics_controller: The controller object for managing topics.
         notes_controller: The controller object for managing notes.
         main_tabs: The main tabs widget for the app.
+        popup_name: The name of the currently displayed popup; None if no
+            popup is shown.
+        footer: The footer widget of the app.
     """
     TITLE = "Tuido"
     CSS_PATH = 'view/app_style.css'
@@ -50,6 +55,8 @@ class TuidoApp(App):
     main_tabs: MainTabs
     topics_controller: TopicsController
     notes_controller: NotesController
+    popup_name: str | None = None
+    footer: Footer
 
 
     BINDINGS = [
@@ -107,6 +114,16 @@ class TuidoApp(App):
         #         description='Date -',
         #         tooltip='Remove the date from the task'),
 
+        # Tasks controller: Popup
+        Binding(key='f4', key_display='F4', action='tasks_popup_edit_cancel',
+                description='Cancel',
+                tooltip='Discard changes and close the popup'),
+
+        Binding(key='f5', key_display='F5', action='tasks_popup_edit_save',
+                description='Save',
+                tooltip='Save changes and close the popup'),
+
+
         # Topics controller
         Binding(key='f1', key_display='F1', action='topics_new',
                 description='New',
@@ -139,6 +156,9 @@ class TuidoApp(App):
             tooltip='Show the textarea and markdown'),
 
         # Global
+        Binding(key='f9', key_display='F9', action='app_get_focus',
+                description='Get focus',
+                tooltip='Get ID of the focused widget'),
         Binding(key='f11', key_display='F11',
                 action='app_copy_selection_to_clipboard',
                 description='Copy',
@@ -159,8 +179,7 @@ class TuidoApp(App):
         parser = argparse.ArgumentParser()
         parser.add_argument('--data_folder', type=str)
         args = parser.parse_args()
-        data_folder = args.data_folder if args.data_folder \
-                                       else 'data'
+        data_folder = args.data_folder if args.data_folder else 'data'
 
         # Config
         self.config = Config(f'{data_folder}/config.yaml')
@@ -171,7 +190,7 @@ class TuidoApp(App):
         self.notes_model = Notes(f'{data_folder}/notes.md')
 
         # Views
-        self.main_tabs = MainTabs()
+        self.main_tabs = MainTabs(self)
 
         # Controllers
         self.tasks_controller = TasksController(
@@ -194,7 +213,9 @@ class TuidoApp(App):
         """
         yield Header(icon='🗂️')
         yield self.main_tabs
-        yield Footer(show_command_palette=False)
+        # yield Footer(show_command_palette=False)
+        self.footer = Footer(show_command_palette=False)
+        yield self.footer
 
     def on_startup(self) -> None:
         """
@@ -243,6 +264,7 @@ class TuidoApp(App):
         See also:
             https://textual.textualize.io/guide/actions/#dynamic-actions
         """
+        # Hide shortcut key if the action is not defined
         if action == '':
             return False
 
@@ -250,14 +272,27 @@ class TuidoApp(App):
         GLOBAL_ACTIONS = ['app', 'quit', 'copy_to_clipboard',
                           'focus_next', 'focus_previous']
 
+        if action in GLOBAL_ACTIONS:
+            return True
+
         # Get name if the current tab
         current_tab = self.main_tabs.current_tab
 
         # Extract the name of the controller from the action
         controller_name = action.split('_')[0]
 
+        # Check if a popup is shown and if action is valid for it
+        if self.popup_name is not None:
+            if len(action.split('_')) <= 2 or action.split('_')[1] != 'popup':
+                return False
+
+            if action.split('_')[2] == self.popup_name:
+                return True
+            else:
+                return False
+
         # Check if the action is valid for the current tab
-        if controller_name in ['topics', 'tasks', 'notes', 'textops']:
+        if controller_name in ['topics', 'tasks', 'notes', 'app']:
             if controller_name == current_tab \
                 or controller_name in GLOBAL_ACTIONS \
                 or action == 'command_palette':
@@ -421,6 +456,7 @@ class TuidoApp(App):
         """
         Activates or deactivates the topics table based on the number of
         user changed inputs.
+
         If there are any user changed inputs, the topics table is
         deactivated (disabled). Otherwise, it is activated (enabled).
         This is used to prevent the user from selecting a different topic
@@ -431,13 +467,15 @@ class TuidoApp(App):
         else:
             self.main_tabs.topics_tab.topics_table.disabled = False
 
-    def action_do_nothing(self) -> None:
-        # focused_widget = self.focused  # TODO: or self.screen.focused ?
-        # if focused_widget:
-        #     logging.info(f'Fokus liegt auf: {focused_widget.id}')
-        # else:
-        #     logging.info('Kein Widget hat den Fokus.')
-        pass
+    # Debugging
+    # def action_app_get_focus(self) -> None:
+    #     focused_widget = self.focused  # TODO: or self.screen.focused ?
+    #     if focused_widget:
+    #         # logging.info(f'Focus on: {focused_widget.id}')
+    #         self.notify(f'Focus on: {focused_widget.id} ({type(focused_widget)})')
+    #     else:
+    #         # logging.info('No widget focused')
+    #         self.notify('No widget focused')
 
     def action_tasks_new(self) -> None:
         """
@@ -477,6 +515,17 @@ class TuidoApp(App):
         else:
             self.notify('Deletion canceled.', severity='warning')
 
+    def action_tasks_popup_edit_cancel(self) -> None:
+        """
+        Closes the task form popup without saving changes.
+        """
+        self.main_tabs.tasks_tab.input_form.clear_and_hide()
+
+    def action_tasks_popup_edit_save(self) -> None:
+        """
+        Saves the changes made in the task form popup and closes it.
+        """
+        self.main_tabs.tasks_tab.input_form.submit_changes()
 
     def action_topics_new(self) -> None:
         """
