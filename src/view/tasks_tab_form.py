@@ -1,9 +1,8 @@
-import logging
+import logging  # noqa # type: ignore
 from typing import Any
 
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
-from textual.binding import Binding
+from textual.containers import Container, Horizontal
 from textual.message import Message
 from textual.widgets import Button, Input, Label, Select, MaskedInput, ListView
 
@@ -46,7 +45,8 @@ class TasksInputPopup(Container):
             self.end_date = end_date
             super().__init__()
 
-    def __init__(self, tuido_app: App, list_views: dict[str, ListView | Any], **kwargs) -> None:
+    def __init__(self, tuido_app: App, list_views: dict[str, ListView | Any],
+                 **kwargs) -> None:
         """
         Initializes the popup with a dictionary of list views.
 
