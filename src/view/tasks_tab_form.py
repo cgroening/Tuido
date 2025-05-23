@@ -1,4 +1,7 @@
 import logging  # noqa # type: ignore
+import re
+from enum import Enum
+from datetime import datetime, timedelta
 from typing import Any
 
 from textual.app import App, ComposeResult
@@ -7,6 +10,16 @@ from textual.message import Message
 from textual.widgets import Button, Input, Label, Select, MaskedInput, ListView
 
 from model.tasks_model import Task, TaskPriority  # type: ignore
+
+
+class DateName(Enum):
+    START_DATE = 'start_date'
+    END_DATE = 'end_date'
+
+
+class DateAdjustment(Enum):
+    DECREASE = 'decrease'
+    INCREASE = 'increase'
 
 
 class TasksInputPopup(Container):
@@ -24,6 +37,7 @@ class TasksInputPopup(Container):
         priority_input: Dropdown for selecting task priority.
         start_date_input: Input field for start date.
         end_date_input: Input field for end date.
+        invalid_inputs: Set of IDs of invalid input fields.
     """
     tuido_app: App
     list_views: dict[str, ListView | Any] = {}
@@ -31,6 +45,7 @@ class TasksInputPopup(Container):
     priority_input: Select
     start_date_input: MaskedInput
     end_date_input: MaskedInput
+    invalid_inputs: set[str] = set()
 
 
     class Submit(Message):
@@ -77,21 +92,24 @@ class TasksInputPopup(Container):
 
         # Start Date
         yield Label('Start Date:')
-        self.start_date_input = MaskedInput(template='9999-99-99;0',
-                                            placeholder='YYYY-MM-DD')
+        self.start_date_input = MaskedInput(
+            id='start_date', template='9999-99-99;0', placeholder='YYYY-MM-DD'
+        )
         yield self.start_date_input
 
         # End Date
         yield Label('End Date:')
-        self.end_date_input = MaskedInput(template='9999-99-99;0',
-                                          placeholder='YYYY-MM-DD')
+        self.end_date_input = MaskedInput(
+            id='end_date', template='9999-99-99;0', placeholder='YYYY-MM-DD'
+        )
         yield self.end_date_input
 
         # Submit and Cancel Button
-        with Horizontal():
-            yield Button('Cancel', id='cancel', variant='error')
-            yield Label('  ')  # Spacer
-            yield Button('Submit', id='submit', variant='success')
+        # TODO: Remove the commented code below
+        # with Horizontal():
+        #     yield Button('Cancel', id='cancel', variant='error')
+        #     yield Label('  ')  # Spacer
+        #     yield Button('Submit', id='submit', variant='success')
 
     def set_input_values(self, task: Task):
         """
@@ -114,6 +132,93 @@ class TasksInputPopup(Container):
         self.start_date_input.value = task.start_date
         self.end_date_input.value = task.end_date
 
+    def adjust_date(self, date_name: DateName, adjustment: DateAdjustment) \
+    -> None:
+        """
+        Adjusts the date in the input field based on the provided date name
+        and adjustment type.
+
+        Args:
+            date_name: The name of the date input field (start or end date).
+            adjustment: The type of adjustment (increase or decrease).
+        """
+        # Get the input widget instance and determine the adjustment factor
+        match date_name:
+            case DateName.START_DATE:
+                input_widget: MaskedInput = self.start_date_input
+            case _:
+                input_widget: MaskedInput = self.end_date_input
+
+        if adjustment == DateAdjustment.INCREASE:
+            delta_factor = 1
+        else:
+            delta_factor = -1
+
+        # Adjust the date in the input field
+        if input_widget.value:
+            # Try to parse the date and adjust it
+            try:
+                date = datetime.strptime(input_widget.value, "%Y-%m-%d")
+                new_date = date + timedelta(days=1) * delta_factor
+                input_widget.value = new_date.strftime("%Y-%m-%d")
+            except ValueError:
+                pass
+        else:
+            # If the input is empty, set it to today's date
+            input_widget.value = datetime.now().strftime("%Y-%m-%d")
+
+        input_widget.refresh()
+
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """
+        Handles input change events.
+
+        Validates the input values for start and end dates. If the input is
+        valid, it removes the invalid class from the input field. If the input
+        is invalid, it adds the invalid class to the input field and stores the
+        input ID in the invalid_inputs set.
+
+        Args:
+            event: The input change event.
+        """
+        if event.input.id in ['start_date', 'end_date']:
+            value = event.value
+
+            if self.is_valid_date(value) or value == '':
+                if event.input.id in self.invalid_inputs:
+                    self.invalid_inputs.remove(event.input.id)
+                event.input.remove_class('invalid_input')
+            else:
+                self.invalid_inputs.add(event.input.id)
+                event.input.add_class('invalid_input')
+
+            event.input.refresh()
+
+    def is_valid_date(self, date_str: str) -> bool:
+        """
+        Validates the date format.
+
+        Checks if the date string is in the format YYYY-MM-DD and if it is a
+        valid date.
+
+        Args:
+            date_str: The date string to validate.
+
+        Returns:
+            bool: True if the date string is valid, False otherwise.
+        """
+        # Check if the date string matches the format YYYY-MM-DD
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date_str):
+            return False
+
+        # Check if the date string is a valid date
+        try:
+            datetime.strptime(date_str, "%Y-%m-%d")
+            return True
+        except ValueError:
+            return False
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
         Handles button press events.
@@ -125,7 +230,8 @@ class TasksInputPopup(Container):
             # Send a message with the entered data
             self.submit_changes()
 
-        self.clear_and_hide()
+        if event.button.id == 'cancel':
+            self.clear_and_hide()
 
     def submit_changes(self):
         """
@@ -134,14 +240,36 @@ class TasksInputPopup(Container):
         This method is called when the submit button is pressed. It sends a
         message with the entered data and clears the input fields.
         """
-        self.post_message(self.Submit(
-            self.description_input.value,
-            self.priority_input.value,
-            self.start_date_input.value,
-            self.end_date_input.value
-        ))
+        if self.check_invalid_inputs():
+            return
+        else:
+            self.post_message(self.Submit(
+                self.description_input.value,
+                self.priority_input.value,
+                self.start_date_input.value,
+                self.end_date_input.value
+            ))
 
-        self.clear_and_hide()
+            self.clear_and_hide()
+
+    def check_invalid_inputs(self) -> bool:
+        """
+        Checks if there are any invalid inputs.
+
+        If there are invalid inputs, it shows an error message and returns
+        True. Otherwise, it returns False.
+
+        Returns:
+            bool: True if there are invalid inputs, False otherwise.
+        """
+        if len(self.invalid_inputs) > 0:
+            self.app.notify(
+                'Please correct the invalid input(s) before submitting.',
+                severity='error'
+            )
+            return True
+        else:
+            return False
 
     def clear_and_hide(self):
         """
