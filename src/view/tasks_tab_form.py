@@ -1,5 +1,6 @@
 import logging  # noqa # type: ignore
 import re
+import asyncio
 from enum import Enum
 from datetime import datetime, timedelta
 from typing import Any
@@ -106,7 +107,7 @@ class TasksInputPopup(Container):
         yield self.end_date_input
 
         # Submit and Cancel Button
-        # TODO: Remove the commented code below
+        # TODO: Remove the commented code below if no one misses the buttons
         # with Horizontal():
         #     yield Button('Cancel', id='cancel', variant='error')
         #     yield Label('  ')  # Spacer
@@ -284,8 +285,8 @@ class TasksInputPopup(Container):
 
         # Hide the popup
         self.display = False
-        self.set_list_view_state(enabled=True)
-        self.reselect_list_view_item()
+        # self.set_list_view_state(enabled=True)
+        # self.reselect_list_view_item()
 
     def on_show(self):
         """
@@ -298,7 +299,7 @@ class TasksInputPopup(Container):
         self.tuido_app.footer.refresh_bindings()  # type: ignore
         self.set_list_view_state(enabled=False)
 
-    def on_hide(self):
+    async def on_hide(self):
         """
         Called when the popup is hidden.
 
@@ -308,6 +309,9 @@ class TasksInputPopup(Container):
         self.tuido_app.popup_name = None          # type: ignore
         self.tuido_app.footer.refresh_bindings()  # type: ignore
 
+        self.set_list_view_state(enabled=True)
+        await self.reselect_list_view_item()
+
     def set_list_view_state(self, enabled: bool) -> None:
         """
         Sets the state of the list views to either enabled or disabled.
@@ -316,37 +320,41 @@ class TasksInputPopup(Container):
             list_view.can_focus = enabled
             list_view.disabled = not enabled
 
-    def reselect_list_view_item(self) -> None:
+    async def reselect_list_view_item(self) -> None:
         """
         Re-selects the item in the list view that was selected before the popup
         was shown.
         """
-        config: Config = Config.instance
+        config: Config = Config.instance                    # type: ignore
         tasks_controller = self.tuido_app.tasks_controller  # type: ignore
-        tasks_tab = self.tuido_app.main_tabs.tasks_tab
+        tasks_tab = self.tuido_app.main_tabs.tasks_tab      # type: ignore
 
-
-        self.tuido_app.notify(tasks_controller.task_action.value)
-
+        # Get the name of the list view to be focused and the index of the
+        # task to be selected based on the task action (new or edit)
         if tasks_controller.task_action.value == 'new':
             list_view_name = config.task_column_names[0]
             task_index = tasks_controller.index_of_new_task
-
-
-        # self.tuido_app.notify(str(self.tuido_app.tasks_controller.index_of_new_task))
-
-
         else:
-
-
             list_view_name = tasks_tab.selected_column_name
             task_index = tasks_tab.selected_task_index
 
-        self.notify(
-            f"list_view_name: {list_view_name}, task_index: {task_index}"
-        )
+        # Get the list view instance and set its state to enabled
+        list_view = tasks_tab.list_views[list_view_name]
+        list_view.can_focus = True
+        list_view.disabled = False
 
-        list_views = tasks_tab.list_views
+        # Set the selected index and focus the list view
+        await self.focus_listview(list_view, task_index)
 
-        list_views[list_view_name].focus()
-        list_views[list_view_name].selected_index = task_index
+    async def focus_listview(self, list_view: ListView, selected_index: int) \
+    -> None:
+        """
+        Focuses the specified list view and selects the specified index.
+        Args:
+            list_view: The list view to be focused.
+            selected_index: The index of the item to be selected.
+        """
+        await asyncio.sleep(0.05)  # Wait for the UI to update
+        list_view.index = selected_index
+        list_view.focus()
+        list_view.refresh()

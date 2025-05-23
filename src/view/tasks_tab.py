@@ -2,16 +2,14 @@ from __future__ import annotations
 import logging
 
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, Vertical, VerticalScroll, VerticalGroup
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.events import Key, Focus, Blur
-from textual.reactive import reactive
 from textual.widgets import Static, ListView, ListItem, Label
 
-from rich.padding import Padding
 from rich.text import Text
 
 from model.tasks_model import Task, TaskPriority
-from view.tasks_tab_form import TasksInputPopup  # Import the TasksTab_Form class
+from view.tasks_tab_form import TasksInputPopup
 
 
 class CustomListView(ListView):
@@ -352,21 +350,9 @@ class TasksTab(Static):
         Checks if the ListView has any children and sets the can_focus
         attribute to True if it does.
         """
-
-        # for list_view in self.list_views.values():
-        #     logging.info(f'ListView {list_view.column_name} has {len(list_view.children)} children')
-
-        #     if len(list_view.children) > 0:
-        #         list_view.can_focus = True
-        #     else:
-        #         list_view.can_focus = False
-        #         # list_view.can_focus = True
-        # pass
-
         for column_name in self.column_names:
-            if column_name in self.tasks.keys() and len(self.tasks[column_name]) > 0:
+            if column_name in self.tasks.keys() \
+            and len(self.tasks[column_name]) > 0:
                 self.list_views[column_name].can_focus = True
             else:
                 self.list_views[column_name].can_focus = False
-
-

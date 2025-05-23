@@ -305,6 +305,10 @@ class TuidoApp(App):
                 return True
             else:
                 return False
+        else:
+            # Hide bindings for popups when no popup is shown
+            if len(action.split('_')) > 2 and action.split('_')[1] == 'popup':
+                return False
 
         # Check if the action is valid for the current tab
         if controller_name in ['topics', 'tasks', 'notes', 'app']:

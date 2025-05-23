@@ -1,7 +1,6 @@
 import copy
 import enum
 import logging
-from collections import Counter
 
 from textual.app import App
 from textual.widgets import ListView
@@ -23,6 +22,22 @@ class TaskMoveDirection(enum.Enum):
 
 
 class TasksController:
+    """
+    Controller for managing tasks in the application.
+
+    This class handles the interaction between the tasks model and the
+    user interface. It provides methods for displaying the task form,
+    saving tasks, moving tasks between columns, and deleting tasks.
+
+    Attributes:
+        config: The configuration object.
+        tasks_model: The tasks model object.
+        main_tabs: The main tabs object.
+        tuido_app: The main application object.
+        task_action: The action to perform (new or edit).
+        index_of_new_task: The index of the most recently added task
+            (-1 if not applicable).
+    """
     config: Config
     tasks_model: Tasks
     main_tabs: MainTabs
@@ -63,28 +78,27 @@ class TasksController:
         """
         self.task_action = task_action
 
-        # # Get the list view that is currently focused
-        # tasks_tab = self.main_tabs.tasks_tab
-        # focused_list_view_name: str | None = None
+        # Get the name of the focused list view, return if none is focused
+        tasks_tab = self.main_tabs.tasks_tab
+        focused_list_view_name: str | None = None
 
-        # for list_view_name, list_view in tasks_tab.list_views.items():
-        #     if list_view.has_focus:
-        #         focused_list_view_name = list_view_name
-        #         break
+        for list_view_name, list_view in tasks_tab.list_views.items():
+            if list_view.has_focus:
+                focused_list_view_name = list_view_name
+                break
 
-        # self.tuido_app.notify(focused_list_view_name)
+        if focused_list_view_name is None and task_action == TaskAction.EDIT:
+            return
 
-        # # Get the index of the selected task
-        # selected_task_index = tasks_tab.selected_task_index
-
-        # # self.tuido_app.notify(selected_task_index)
-
+        # Get the index of the selected task, return if none is selected
+        selected_task_index = tasks_tab.list_views[focused_list_view_name].index  # type: ignore
+        if selected_task_index is None and task_action == TaskAction.EDIT:
+            return
 
         # Show the task form
         input_form = self.main_tabs.tasks_tab.input_form
         input_form.display = True
         self.tuido_app.set_focus(input_form.description_input)
-
         self.set_task_form_input_values()
 
     def set_task_form_input_values(self) -> None:
@@ -141,46 +155,25 @@ class TasksController:
         self.recreate_list_view(column_name)
 
         tasks_list_new = tasks_model.tasks[column_name]
-        self.index_of_new_task = self.get_index_of_new_task(
-            tasks_list_old, tasks_list_new
-        )
+        self.store_index_of_new_task(tasks_list_old, tasks_list_new)
 
-    def get_index_of_new_task(
-        self, tasks_list_old: list[Task],tasks_list_new: list[Task]
-    ) -> int:
+    def store_index_of_new_task(
+        self, tasks_list_old: list[Task], tasks_list_new: list[Task]
+    ) -> None:
         """
-        Compares the old and new task lists to find the index of the new task.
+        Compares the old and new task lists to find the index of the new task
+        and stores it in `self.index_of_new_task`.
 
         Args:
             tasks_list_old: The old list of tasks.
             tasks_list_new: The new list of tasks.
-
-        Returns:
-            The index of the new task in the new list, or -1 if not found.
         """
-        # for i, task in enumerate(tasks_list_new):
-        #     if task not in tasks_list_old:
-        #         return i
-
-        # return -1
-
-        # old_counter = Counter(tasks_list_old)
-        # new_counter = Counter()
-
-        # for i, task in enumerate(tasks_list_new):
-        #     new_counter[task] += 1
-        #     if new_counter[task] > old_counter[task]:
-        #         return i
-
-        # return -1
-
         for i, task in enumerate(tasks_list_new):
             if len(tasks_list_old) >= i+1 and task != tasks_list_old[i]:
-                return i
+                self.index_of_new_task = i
+                return
 
-        return -1
-
-
+        self.index_of_new_task = -1
 
     def recreate_list_view(self, column_name: str) -> None:
         """
