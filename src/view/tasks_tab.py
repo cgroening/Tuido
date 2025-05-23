@@ -368,3 +368,5 @@ class TasksTab(Static):
                 self.list_views[column_name].can_focus = True
             else:
                 self.list_views[column_name].can_focus = False
+
+

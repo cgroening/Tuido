@@ -1,5 +1,7 @@
+import copy
 import enum
 import logging
+from collections import Counter
 
 from textual.app import App
 from textual.widgets import ListView
@@ -26,6 +28,7 @@ class TasksController:
     main_tabs: MainTabs
     tuido_app: App
     task_action: TaskAction
+    index_of_new_task: int = -1
 
     def __init__(
         self, config: Config, tasks_model: Tasks, main_tabs: MainTabs,
@@ -38,7 +41,7 @@ class TasksController:
             config: The configuration object.
             tasks_model: The tasks model object.
             main_tabs: The main tabs object.
-            app: The main application object.
+            tuido_app: The main application object.
         """
         self.config = config
         self.tasks_model = tasks_model
@@ -60,6 +63,24 @@ class TasksController:
         """
         self.task_action = task_action
 
+        # # Get the list view that is currently focused
+        # tasks_tab = self.main_tabs.tasks_tab
+        # focused_list_view_name: str | None = None
+
+        # for list_view_name, list_view in tasks_tab.list_views.items():
+        #     if list_view.has_focus:
+        #         focused_list_view_name = list_view_name
+        #         break
+
+        # self.tuido_app.notify(focused_list_view_name)
+
+        # # Get the index of the selected task
+        # selected_task_index = tasks_tab.selected_task_index
+
+        # # self.tuido_app.notify(selected_task_index)
+
+
+        # Show the task form
         input_form = self.main_tabs.tasks_tab.input_form
         input_form.display = True
         self.tuido_app.set_focus(input_form.description_input)
@@ -113,9 +134,53 @@ class TasksController:
             tasks_model.delete_task(column_name, selected_task_index)
 
         # Add new or edited task to the tasks model and refresh the list view
+        tasks_list_old = copy.deepcopy(tasks_model.tasks[column_name])
+
         tasks_model.add_task_to_dict_from_raw_data(column_name, task_raw)
         tasks_model.save_to_file()
         self.recreate_list_view(column_name)
+
+        tasks_list_new = tasks_model.tasks[column_name]
+        self.index_of_new_task = self.get_index_of_new_task(
+            tasks_list_old, tasks_list_new
+        )
+
+    def get_index_of_new_task(
+        self, tasks_list_old: list[Task],tasks_list_new: list[Task]
+    ) -> int:
+        """
+        Compares the old and new task lists to find the index of the new task.
+
+        Args:
+            tasks_list_old: The old list of tasks.
+            tasks_list_new: The new list of tasks.
+
+        Returns:
+            The index of the new task in the new list, or -1 if not found.
+        """
+        # for i, task in enumerate(tasks_list_new):
+        #     if task not in tasks_list_old:
+        #         return i
+
+        # return -1
+
+        # old_counter = Counter(tasks_list_old)
+        # new_counter = Counter()
+
+        # for i, task in enumerate(tasks_list_new):
+        #     new_counter[task] += 1
+        #     if new_counter[task] > old_counter[task]:
+        #         return i
+
+        # return -1
+
+        for i, task in enumerate(tasks_list_new):
+            if len(tasks_list_old) >= i+1 and task != tasks_list_old[i]:
+                return i
+
+        return -1
+
+
 
     def recreate_list_view(self, column_name: str) -> None:
         """
