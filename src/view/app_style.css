@@ -106,14 +106,14 @@ ListView ListItem.task_prio_low.selected {
 }
 
 TasksInputPopup {
+    align: center middle;
     background: $background;
     padding: 2;
     border: round $secondary;
-    /* width: 50%; */
+    width: 80%;
     height: auto;
     /* dock: top; */
     layer: popup;
-    align: center middle;
 }
 
 TasksInputPopup Input, TasksInputPopup Select, TasksInputPopup MaskedInput {

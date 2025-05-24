@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from textual.app import App, ComposeResult
-from textual.containers import Container
+from textual.containers import Container, Horizontal
 from textual.message import Message
 from textual.widgets import Button, Input, Label, Select, MaskedInput, ListView
 
@@ -94,10 +94,16 @@ class TasksInputPopup(Container):
 
         # Start Date
         yield Label('Start Date:')
+
+        # with Horizontal():
         self.start_date_input = MaskedInput(
             id='start_date', template='9999-99-99;0', placeholder='YYYY-MM-DD'
         )
         yield self.start_date_input
+
+            # self.start_date_label = Label('(Wednesday)')
+
+            # yield self.start_date_label
 
         # End Date
         yield Label('End Date:')
