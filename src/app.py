@@ -180,7 +180,7 @@ class TuidoApp(App):
         #         tooltip='Get ID of the focused widget'),
         Binding(key='f11', key_display='F11',
                 action='app_copy_selection_to_clipboard',
-                description='Copy',
+                description='CpySel',
                 tooltip='Copy the selected text to the clipboard'),
         Binding(key='f12', key_display='F12',
                 action='app_paste_from_clipboard',
@@ -189,7 +189,7 @@ class TuidoApp(App):
 
         Binding(key='shift+f11', key_display='S+F11',
                 action='app_copy_widget_value_to_clipboard',
-                description='Copy',
+                description='CpyVal',
                 tooltip='Copy value of the selected input widget to clipboard'),
     ]
 
@@ -243,6 +243,7 @@ class TuidoApp(App):
         yield self.main_tabs
         # yield Footer(show_command_palette=False)
         self.footer = Footer(show_command_palette=False)
+        self.footer.compact = True
         yield self.footer
 
     def on_startup(self) -> None:

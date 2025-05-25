@@ -169,8 +169,9 @@ class TaskEditScreen(ModalScreen):
                         self.end_date_input,
                         self.end_date_weekday_label
                     )
-
-            yield Footer()
+            footer = Footer()
+            footer.compact = True
+            yield footer
 
     @work
     async def action_close_modal(self) -> None:

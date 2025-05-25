@@ -22,6 +22,10 @@ https://textual.textualize.io/styles/border/
     display: none;
 }
 
+#tasks-tab {
+    margin-left: 1;
+}
+
 #topics-tab {
     padding-bottom: 1;
 }
@@ -36,9 +40,10 @@ https://textual.textualize.io/styles/border/
 Label.task_column_header {
     background: $secondary-muted;
     border: hkey $secondary;
-    padding: 0 1 0 1;
+    padding: 0 0 0 0;
     width: 100%;
-    margin: 0 1 1 1;
+    /* margin: 0 1 1 1; */
+    margin: 0 0 1 1;
     offset-x: -1;
 }
 
@@ -60,49 +65,37 @@ ListView {
 ListView ListItem {
     /* margin-top: 1; */
     margin-bottom: 1;
-    padding: 0 1 0 1;
+    padding: 0 0 0 0;
 }
 
 ListView ListItem.task_prio_high {
-    /* background: red 10%; */
     background: $error-muted 40%;
-    /* border: hkey rgb(157, 50, 50); */
     border: hkey $error;
 }
 
 ListView ListItem.task_prio_medium {
-    /* background: yellow 10%; */
     background: $warning-muted 30%;
-    /* border: hkey rgb(216, 216, 93); */
     border: hkey $warning;
 }
 
 ListView ListItem.task_prio_low {
-    /* background: green 10%; */
     background: $success-muted 30%;
-    /* border: hkey rgb(85, 208, 126); */
     border: hkey $success;
 }
 
 ListView ListItem.task_prio_high.selected {
-    /* background: red 20%; */
     background: $error-muted 60%;
-    /* border: thick rgb(157, 50, 50); */
-    border: thick $error;
+    border: outer $error;
 }
 
 ListView ListItem.task_prio_medium.selected {
-    /* background: yellow 20%; */
     background: $warning-muted 50%;
-    /* border: thick rgb(216, 216, 93); */
-    border: thick $warning;
+    border: outer $warning;
 }
 
 ListView ListItem.task_prio_low.selected {
-    /* background: green 20%; */
     background: $success-muted 50%;
-    /* border: thick rgb(85, 208, 126); */
-    border: thick $success;
+    border: outer $success;
 }
 
 /* TasksInputPopup {
