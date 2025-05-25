@@ -69,6 +69,9 @@ class TaskEditScreen(ModalScreen):
         Binding(key='f5', key_display='F5', action='save',
                 description='Save',
                 tooltip='Save changes and close the popup'),
+        Binding(key='f6', key_display='F6', action='set_end_date_to_start_date',
+                description='End=Start',
+                tooltip='Sets the end date to the start date'),
         Binding(key='f7', key_display='F7',
                 action='decrease_start_date',
                 description='Start-1',
@@ -150,22 +153,7 @@ class TaskEditScreen(ModalScreen):
             yield Label('Priority:')
             yield self.priority_input
 
-            # # Start Date
-            # yield Label('Start Date:')
-            # yield HorizontalGroup(
-            #     self.start_date_input,
-            #     self.start_date_weekday_label
-            # )
-
-            # # End Date
-            # yield Label('End Date:')
-            # yield HorizontalGroup(
-            #     self.end_date_input,
-            #     self.end_date_weekday_label
-            # )
-
             with HorizontalGroup():
-
                 # Start Date
                 with VerticalGroup():
                     yield Label('Start Date:')
@@ -201,6 +189,14 @@ class TaskEditScreen(ModalScreen):
         """
         self.submit_changes()
         self.app.pop_screen()
+
+    def action_set_end_date_to_start_date(self) -> None:
+        """
+        Sets the end date to the same value as the start date.
+        """
+        self.end_date_input.value = self.start_date_input.value
+        self.update_weekday_labels()
+        self.end_date_input.refresh()
 
     def action_decrease_start_date(self) -> None:
         """

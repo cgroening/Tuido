@@ -10,8 +10,8 @@
 - [x] Add keyboard shortcut for +/- one day when entering a date
 - [x] Check if there are changes before allowing the user to cancel the task edit screen
 - [x] Task edit screen: make the week day appear on the right of the date input
-- [ ] Select the nearest task after deleting one, if list view is not empty
-- [ ] Make copy & paste work in textareas and inputs
+- [x] Select the nearest task after deleting one, if list view is not empty
+- [x] Make copy & paste work in textareas and inputs
 - [x] Display the weekday next to the date
 - [ ] Make backups of all .json files at program startup
 - [ ] Explain config.yaml more detailed in the README.md

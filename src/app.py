@@ -175,13 +175,22 @@ class TuidoApp(App):
             tooltip='Show the textarea and markdown'),
 
         # Global
-        Binding(key='f9', key_display='F9', action='app_get_focus',
-                description='Get focus',
-                tooltip='Get ID of the focused widget'),
+        # Binding(key='f9', key_display='F9', action='app_get_focus',
+        #         description='Get focus',
+        #         tooltip='Get ID of the focused widget'),
         Binding(key='f11', key_display='F11',
                 action='app_copy_selection_to_clipboard',
                 description='Copy',
-                tooltip='Copy selection to clipboard'),
+                tooltip='Copy the selected text to the clipboard'),
+        Binding(key='f12', key_display='F12',
+                action='app_paste_from_clipboard',
+                description='Paste',
+                tooltip='Paste the text from the clipboard'),
+
+        Binding(key='shift+f11', key_display='S+F11',
+                action='app_copy_widget_value_to_clipboard',
+                description='Copy',
+                tooltip='Copy value of the selected input widget to clipboard'),
     ]
 
 
@@ -712,20 +721,9 @@ class TuidoApp(App):
         tabs = self.query_one('#main_tabs', expect_type=Tabs)
         tabs.action_next_tab()
 
-    def action_copy_to_clipboard(self) -> None:
-        """
-        Copies content from the currently focused input or textarea to
-        the clipboard.
-        """
-        focused_widget = self.focused
-
-        # if isinstance(focused_widget, (Input, TextArea)):
-        if hasattr(focused_widget, 'value'):
-            self.copy_to_clipboard(focused_widget.value)  # type: ignore
-
     def action_app_copy_selection_to_clipboard(self) -> None:
         """
-        Copies the selected text from the currently focused widget to
+        Copies the selected text from the currently focused input widget to
         the clipboard.
         """
         focused_widget: Widget | None = self.focused
@@ -735,8 +733,64 @@ class TuidoApp(App):
 
         self.notify('Selection copied to clipboard!')
 
+    def action_app_copy_widget_value_to_clipboard(self) -> None:
+        """
+        Copies value of the currently focused input widget to the clipboard.
+        """
+        focused_widget = self.focused
 
+        # if isinstance(focused_widget, (Input, TextArea)):
+        if hasattr(focused_widget, 'value'):
+            self.copy_to_clipboard(focused_widget.value)  # type: ignore
+
+            self.notify('Value copied to clipboard!')
+
+    def action_app_paste_from_clipboard(self) -> None:
+        """
+        Pastes the text from the clipboard to the currently focused input
+        widget at cursor position.
+        """
+        # Check if a widget is focused
+        focused_widget: Widget | None = self.focused
+
+        if not focused_widget:
+            self.notify('No widget focused.', severity='warning')
+            return
+
+        # Check if clipboard is empty
+        clipboard_text = self.clipboard
+        if not clipboard_text:
+            self.notify('Clipboard is empty.', severity='warning')
+            return
+
+        # Paste into Input/TextArea
+        if isinstance(focused_widget, Input):
+            self._paste_into_input(focused_widget, clipboard_text)
+        elif isinstance(focused_widget, TextArea):
+            self._paste_into_textarea(focused_widget, clipboard_text)
+        else:
+            self.notify('Focused widget does not support pasting text.', severity='warning')
+
+    def _paste_into_input(self, input: Input, text: str) \
+    -> None:
+        """
+        Pastes the given text into the input widget at the cursor position.
+        """
+        cursor_pos = input.cursor_position or len(input.value)
+        input.insert(text, cursor_pos)
+        input.cursor_position = cursor_pos + len(text)
+        self.notify('Text pasted into input field!')
+
+    def _paste_into_textarea(self, textarea: TextArea, text: str) \
+    -> None:
+        """
+        Pastes the given text into the textarea at the cursor position.
+        """
+        cursor_pos: tuple[int, int] = textarea.cursor_location or (0, 0)
+        textarea.insert(text, cursor_pos)
+        textarea.cursor_location = (cursor_pos[0], cursor_pos[1]+len(text))
+        self.notify('Text pasted into text area!')
+
+    # Debugging
     # async def on_key(self, event: events.Key) -> None:
     #     self.notify(f"Key pressed: {event.key}")
-
-
