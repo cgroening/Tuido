@@ -1,6 +1,8 @@
+import asyncio
 import copy
 import enum
 import logging
+import time
 
 from textual.app import App
 from textual.widgets import ListView
@@ -8,7 +10,7 @@ from textual.widgets import ListView
 from model.config_model import Config  # type: ignore
 from model.tasks_model import Task, Tasks    # type: ignore
 from view.main_tabs import MainTabs  # type: ignore
-from view.tasks_tab_form import TasksInputPopup  # type: ignore
+from view.tasks_tab_edit_screen import TaskEditScreen  # type: ignore
 
 
 class TaskAction(enum.Enum):
@@ -35,8 +37,8 @@ class TasksController:
         main_tabs: The main tabs object.
         tuido_app: The main application object.
         task_action: The action to perform (new or edit).
-        index_of_new_task: The index of the most recently added task
-            (-1 if not applicable).
+        index_of_new_task: The index of the most recently
+            added or modified task (-1 if not applicable).
     """
     config: Config
     tasks_model: Tasks
@@ -44,6 +46,7 @@ class TasksController:
     tuido_app: App
     task_action: TaskAction
     index_of_new_task: int = -1
+
 
     def __init__(
         self, config: Config, tasks_model: Tasks, main_tabs: MainTabs,
@@ -95,13 +98,15 @@ class TasksController:
         if selected_task_index is None and task_action == TaskAction.EDIT:
             return
 
-        # Show the task form
-        input_form = self.main_tabs.tasks_tab.input_form
-        input_form.display = True
-        self.tuido_app.set_focus(input_form.description_input)
-        self.set_task_form_input_values()
+        # Show the screen creating or editing a task
+        task_edit_screen = TaskEditScreen(
+            self.tuido_app, self.main_tabs.tasks_tab.list_views
+        )
+        self.tuido_app.push_screen(task_edit_screen)
+        self.set_task_form_input_values(task_edit_screen)
 
-    def set_task_form_input_values(self) -> None:
+    def set_task_form_input_values(self, task_edit_screen: TaskEditScreen) \
+    -> None:
         """
         Sets the input values for the task form based on the selected task
         if the task action is `TaskAction.EDIT`.
@@ -114,10 +119,10 @@ class TasksController:
 
             # Get the selected task and set the input form values
             task = self.tasks_model.tasks[column_name][selected_task_index]
-            input_form = self.main_tabs.tasks_tab.input_form
-            input_form.set_input_values(task)
+            # input_form = self.main_tabs.tasks_tab.input_form
+            task_edit_screen.set_input_values(task)
 
-    def save_task(self, message: TasksInputPopup.Submit) -> None:
+    def save_task(self, message: TaskEditScreen.Submit) -> None:
         """
         Saves the task data from the input form to the tasks model
         and updates the view.
@@ -128,6 +133,7 @@ class TasksController:
             message: The message containing the task data from the input form.
         """
         tasks_model = self.tasks_model
+
         # Get the task data from the input form
         task_raw = {
             'description': message.description,
@@ -148,28 +154,31 @@ class TasksController:
             tasks_model.delete_task(column_name, selected_task_index)
 
         # Add new or edited task to the tasks model and refresh the list view
-        tasks_list_old = copy.deepcopy(tasks_model.tasks[column_name])
-
-        tasks_model.add_task_to_dict_from_raw_data(column_name, task_raw)
+        task = tasks_model.add_task_to_dict_from_raw_data(column_name, task_raw)
         tasks_model.save_to_file()
         self.recreate_list_view(column_name)
+        self.store_index_of_new_task(column_name, task)
 
-        tasks_list_new = tasks_model.tasks[column_name]
-        self.store_index_of_new_task(tasks_list_old, tasks_list_new)
+        # Delayed (re)selection of the new or edited task so UI is fully updated
+        asyncio.get_event_loop().call_soon(self.reselect_list_view_item)
 
     def store_index_of_new_task(
-        self, tasks_list_old: list[Task], tasks_list_new: list[Task]
+        self, column_name: str, new_task: Task
     ) -> None:
         """
-        Compares the old and new task lists to find the index of the new task
-        and stores it in `self.index_of_new_task`.
+        Stores the index of the newly added or edited task. This is used to
+        reselect the task in the list view after the edit screen is closed and
+        the list view is recreated.
 
         Args:
-            tasks_list_old: The old list of tasks.
-            tasks_list_new: The new list of tasks.
+            column_name: The name of the column where the task was added
+                or edited.
+            new_task: The task that was added or edited.
         """
-        for i, task in enumerate(tasks_list_new):
-            if len(tasks_list_old) >= i+1 and task != tasks_list_old[i]:
+        tasks = self.tasks_model.tasks[column_name]
+
+        for i, task in enumerate(tasks):
+            if task == new_task:
                 self.index_of_new_task = i
                 return
 
@@ -192,6 +201,50 @@ class TasksController:
         for list_item in list_items:
             list_view.append(list_item)
         tasks_tab.set_can_focus()
+
+    def reselect_list_view_item(self) -> None:
+        """
+        Re-selects the item in the list view that was selected before the popup
+        was shown or the item that was just created.
+        """
+        config: Config = Config.instance                    # type: ignore
+        tasks_controller = self.tuido_app.tasks_controller  # type: ignore
+        tasks_tab = self.tuido_app.main_tabs.tasks_tab      # type: ignore
+
+        # Get the name of the list view to be focused and the index of the
+        # task to be selected based on the task action (new or edit)
+        if tasks_controller.task_action.value == 'new':
+            list_view_name = config.task_column_names[0]
+            task_index = tasks_controller.index_of_new_task
+        else:
+            list_view_name = tasks_tab.selected_column_name
+            # task_index = tasks_tab.selected_task_index
+            task_index = tasks_controller.index_of_new_task
+
+        # Get the list view instance and set its state to enabled
+        list_view = tasks_tab.list_views[list_view_name]
+
+        # Workaround to trigger the on_focus event of the list view
+        # This is necessary to ensure the list view is focused correctly
+        list_view.can_focus = False
+        list_view.disabled = True
+        list_view.can_focus = True
+        list_view.disabled = False
+
+        # Set the selected index and focus the list view
+        self.focus_listview(list_view, task_index)
+
+    def focus_listview(self, list_view: ListView, selected_index: int) \
+    -> None:
+        """
+        Focuses the specified list view and selects the specified index.
+        Args:
+            list_view: The list view to be focused.
+            selected_index: The index of the item to be selected.
+        """
+        list_view.index = selected_index
+        list_view.focus()
+        list_view.refresh()
 
     def move_task(self, move_direction: TaskMoveDirection) -> None:
         """

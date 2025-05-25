@@ -1,14 +1,14 @@
 import logging  # noqa # type: ignore
 import re
-import asyncio
 from enum import Enum
 from datetime import datetime, timedelta
 from typing import Any
 
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal
+from textual.binding import Binding
 from textual.message import Message
-from textual.widgets import Button, Input, Label, Select, MaskedInput, ListView
+from textual.screen import ModalScreen
+from textual.widgets import Input, Label, Select, MaskedInput, ListView, Static, Footer
 
 from model.tasks_model import Task, TaskPriority  # type: ignore
 from model.config_model import Config  # type: ignore
@@ -24,7 +24,7 @@ class DateAdjustment(Enum):
     INCREASE = 'increase'
 
 
-class TasksInputPopup(Container):
+class TaskEditScreen(ModalScreen):
     """
     Popup for entering task details.
 
@@ -38,7 +38,9 @@ class TasksInputPopup(Container):
         description_input: Input field for task description.
         priority_input: Dropdown for selecting task priority.
         start_date_input: Input field for start date.
+        start_date_label: Label for displaying the start date.
         end_date_input: Input field for end date.
+        end_date_label: Label for displaying the end date.
         invalid_inputs: Set of IDs of invalid input fields.
     """
     tuido_app: App
@@ -46,8 +48,39 @@ class TasksInputPopup(Container):
     description_input: Input
     priority_input: Select
     start_date_input: MaskedInput
+    start_date_weekday_label: Label
     end_date_input: MaskedInput
+    end_date_weekday_label: Label
     invalid_inputs: set[str] = set()
+
+    BINDINGS = [
+        Binding(key='escape', key_display='ESC', action='close_modal',
+                description='Cancel',
+                tooltip='Discard changes and close the popup',
+                show=False),
+        Binding(key='f4', key_display='F4', action='close_modal',
+                description='Cancel',
+                tooltip='Discard changes and close the popup'),
+        Binding(key='f5', key_display='F5', action='save',
+                description='Save',
+                tooltip='Save changes and close the popup'),
+        Binding(key='f7', key_display='F7',
+                action='decrease_start_date',
+                description='Start-1',
+                tooltip='Decrease the start date by 1 day'),
+        Binding(key='f8', key_display='F8',
+                action='increase_start_date',
+                description='Start+1',
+                tooltip='Increase the start date by 1 day'),
+        Binding(key='f9', key_display='F9',
+                action='decrease_end_date',
+                description='End-1',
+                tooltip='Decrease the end date by 1 day'),
+        Binding(key='f10', key_display='F10',
+                action='increase_end_date',
+                description='End+1',
+                tooltip='Increase the end date by 1 day'),
+    ]
 
 
     class Submit(Message):
@@ -62,17 +95,40 @@ class TasksInputPopup(Container):
             self.end_date = end_date
             super().__init__()
 
+
     def __init__(self, tuido_app: App, list_views: dict[str, ListView | Any],
                  **kwargs) -> None:
         """
         Initializes the popup with a dictionary of list views.
 
         Args:
+            tuido_app: The main application instance.
             list_views: A dictionary containing the list views for the tasks.
         """
         super().__init__(**kwargs)
         self.tuido_app = tuido_app
         self.list_views = list_views
+
+        self.description_input = Input(placeholder='Enter description')
+
+        priorities = ['Low', 'Medium', 'High']
+        self.priority_input = Select((option, option) for option in priorities)
+
+        self.start_date_input = MaskedInput(
+            id='start_date', template='9999-99-99;0', placeholder='YYYY-MM-DD'
+        )
+
+        self.start_date_weekday_label = Label(
+            '(Wednesday)', id='task_start_date_weekday_label'
+        )
+
+        self.end_date_input = MaskedInput(
+            id='end_date', template='9999-99-99;0', placeholder='YYYY-MM-DD'
+        )
+
+        self.end_date_weekday_label = Label(
+            '(Wednesday)', id='task_end_date_weekday_label'
+        )
 
     def compose(self) -> ComposeResult:
         """
@@ -81,43 +137,65 @@ class TasksInputPopup(Container):
         This includes input fields for task description, priority, start date,
         end date, and a submit button.
         """
-        # Description
-        yield Label('Description:')
-        self.description_input = Input(placeholder='Enter description')
-        yield self.description_input
+        with Static(id='main_container'):
+            # with VerticalGroup():
+            # Description
+            yield Label('Description:')
+            yield self.description_input
 
-        # Priority
-        yield Label('Priority:')
-        priorities = ['Low', 'Medium', 'High']
-        self.priority_input = Select((option, option) for option in priorities)
-        yield self.priority_input
+            # Priority
+            yield Label('Priority:')
+            yield self.priority_input
 
-        # Start Date
-        yield Label('Start Date:')
+            # Start Date
+            yield Label('Start Date:')
+                # with HorizontalGroup():
+            yield self.start_date_input
+            yield self.start_date_weekday_label
 
-        # with Horizontal():
-        self.start_date_input = MaskedInput(
-            id='start_date', template='9999-99-99;0', placeholder='YYYY-MM-DD'
-        )
-        yield self.start_date_input
+            # End Date
+            yield Label('End Date:')
+            yield self.end_date_input
+            yield self.end_date_weekday_label
 
-            # self.start_date_label = Label('(Wednesday)')
+            yield Footer()
 
-            # yield self.start_date_label
+    def action_close_modal(self) -> None:
+        """
+        Closes the modal popup without saving changes.
+        """
+        self.app.pop_screen()
 
-        # End Date
-        yield Label('End Date:')
-        self.end_date_input = MaskedInput(
-            id='end_date', template='9999-99-99;0', placeholder='YYYY-MM-DD'
-        )
-        yield self.end_date_input
+    def action_save(self) -> None:
+        """
+        Saves the changes made in the popup and closes it.
+        """
+        self.submit_changes()
+        self.app.pop_screen()
 
-        # Submit and Cancel Button
-        # TODO: Remove the commented code below if no one misses the buttons
-        # with Horizontal():
-        #     yield Button('Cancel', id='cancel', variant='error')
-        #     yield Label('  ')  # Spacer
-        #     yield Button('Submit', id='submit', variant='success')
+    def action_decrease_start_date(self) -> None:
+        """
+        Decreases the start date by 1 day.
+        """
+        self.adjust_date(DateName.START_DATE, DateAdjustment.DECREASE)
+
+    def action_increase_start_date(self) -> None:
+        """
+        Increases the start date by 1 day.
+        """
+        self.adjust_date(DateName.START_DATE, DateAdjustment.INCREASE)
+
+    def action_decrease_end_date(self) -> None:
+        """
+        Decreases the end date by 1 day.
+        """
+        self.adjust_date(DateName.END_DATE, DateAdjustment.DECREASE)
+
+    def action_increase_end_date(self) -> None:
+        """
+        Increases the end date by 1 day.
+        """
+        self.adjust_date(DateName.END_DATE, DateAdjustment.INCREASE)
 
     def set_input_values(self, task: Task):
         """
@@ -177,7 +255,6 @@ class TasksInputPopup(Container):
 
         input_widget.refresh()
 
-
     def on_input_changed(self, event: Input.Changed) -> None:
         """
         Handles input change events.
@@ -186,6 +263,8 @@ class TasksInputPopup(Container):
         valid, it removes the invalid class from the input field. If the input
         is invalid, it adds the invalid class to the input field and stores the
         input ID in the invalid_inputs set.
+
+        Also updates the weekday labels for the start and end date inputs.
 
         Args:
             event: The input change event.
@@ -201,6 +280,7 @@ class TasksInputPopup(Container):
                 self.invalid_inputs.add(event.input.id)
                 event.input.add_class('invalid_input')
 
+            self.update_weekday_labels()
             event.input.refresh()
 
     def is_valid_date(self, date_str: str) -> bool:
@@ -227,19 +307,38 @@ class TasksInputPopup(Container):
         except ValueError:
             return False
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    def update_weekday_labels(self):
         """
-        Handles button press events.
+        Sets the weekday labels for the start and end date inputs.
 
-        If the submit button is pressed, it sends a message with the entered
-        data and clears the input fields.
+        This method updates the weekday labels based on the current values of
+        the start and end date inputs.
         """
-        if event.button.id == 'submit':
-            # Send a message with the entered data
-            self.submit_changes()
+        self.start_date_weekday_label.update(
+            self.get_weekday_name(self.start_date_input.value)
+        )
+        self.end_date_weekday_label.update(self.get_weekday_name(
+            self.end_date_input.value)
+        )
 
-        if event.button.id == 'cancel':
-            self.clear_and_hide()
+    def get_weekday_name(self, date_str: str) -> str:
+        """
+        Returns the name of the weekday for a given date string.
+
+        Args:
+            date_str: The date string in the format YYYY-MM-DD.
+
+        Returns:
+            str: The name of the weekday.
+        """
+        if not date_str:
+            return ''
+
+        try:
+            date = datetime.strptime(date_str, "%Y-%m-%d")
+            return f'({date.strftime('%A')})'
+        except ValueError:
+            return ''
 
     def submit_changes(self):
         """
@@ -257,8 +356,6 @@ class TasksInputPopup(Container):
                 self.start_date_input.value,
                 self.end_date_input.value
             ))
-
-            self.clear_and_hide()
 
     def check_invalid_inputs(self) -> bool:
         """
@@ -279,44 +376,13 @@ class TasksInputPopup(Container):
         else:
             return False
 
-    def clear_and_hide(self):
+    async def on_unmount(self, event: Message):
         """
-        Clears the input fields and hides the popup.
+        Called when the popup is unmounted.
+        This method is currently empty but can be used to perform any cleanup
+        actions when the popup is removed from the screen.
         """
-        # Clear input fields
-        self.description_input.value = ''
-        self.priority_input.clear()
-        self.start_date_input.value = ''
-        self.end_date_input.value = ''
-
-        # Hide the popup
-        self.display = False
-        # self.set_list_view_state(enabled=True)
-        # self.reselect_list_view_item()
-
-    def on_show(self):
-        """
-        Called when the popup is shown.
-
-        Sets the flag "popup_visible" in the main application instance and makes
-        the list views not focusable.
-        """
-        self.tuido_app.popup_name = 'edit'        # type: ignore
-        self.tuido_app.footer.refresh_bindings()  # type: ignore
-        self.set_list_view_state(enabled=False)
-
-    async def on_hide(self):
-        """
-        Called when the popup is hidden.
-
-        Sets the flag "popup_visible" in the main application instance and makes
-        the list views focusable again.
-        """
-        self.tuido_app.popup_name = None          # type: ignore
-        self.tuido_app.footer.refresh_bindings()  # type: ignore
-
-        self.set_list_view_state(enabled=True)
-        await self.reselect_list_view_item()
+        pass
 
     def set_list_view_state(self, enabled: bool) -> None:
         """
@@ -325,42 +391,3 @@ class TasksInputPopup(Container):
         for list_view in self.list_views.values():
             list_view.can_focus = enabled
             list_view.disabled = not enabled
-
-    async def reselect_list_view_item(self) -> None:
-        """
-        Re-selects the item in the list view that was selected before the popup
-        was shown.
-        """
-        config: Config = Config.instance                    # type: ignore
-        tasks_controller = self.tuido_app.tasks_controller  # type: ignore
-        tasks_tab = self.tuido_app.main_tabs.tasks_tab      # type: ignore
-
-        # Get the name of the list view to be focused and the index of the
-        # task to be selected based on the task action (new or edit)
-        if tasks_controller.task_action.value == 'new':
-            list_view_name = config.task_column_names[0]
-            task_index = tasks_controller.index_of_new_task
-        else:
-            list_view_name = tasks_tab.selected_column_name
-            task_index = tasks_tab.selected_task_index
-
-        # Get the list view instance and set its state to enabled
-        list_view = tasks_tab.list_views[list_view_name]
-        list_view.can_focus = True
-        list_view.disabled = False
-
-        # Set the selected index and focus the list view
-        await self.focus_listview(list_view, task_index)
-
-    async def focus_listview(self, list_view: ListView, selected_index: int) \
-    -> None:
-        """
-        Focuses the specified list view and selects the specified index.
-        Args:
-            list_view: The list view to be focused.
-            selected_index: The index of the item to be selected.
-        """
-        await asyncio.sleep(0.05)  # Wait for the UI to update
-        list_view.index = selected_index
-        list_view.focus()
-        list_view.refresh()

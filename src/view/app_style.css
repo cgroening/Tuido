@@ -105,24 +105,48 @@ ListView ListItem.task_prio_low.selected {
     border: thick $success;
 }
 
-TasksInputPopup {
+/* TasksInputPopup {
     align: center middle;
     background: $background;
     padding: 2;
     border: round $secondary;
     width: 80%;
-    height: auto;
+    height: auto; */
     /* dock: top; */
-    layer: popup;
+    /* layer: popup;
+} */
+
+/*
+ * Task Edit Screen
+ */
+
+TaskEditScreen {
+    align: center middle;
+    padding: 2 2 2 2;
+    /* background: $background; */
+    /* width: 80%;
+    height: auto; */
 }
 
-TasksInputPopup Input, TasksInputPopup Select, TasksInputPopup MaskedInput {
-    margin: 1 0 1 0;
+TaskEditScreen #main_container {
+    width: 80%;
+    /* height: auto; */
+    padding: 1 2 0 2;
+    border: panel $secondary;
+}
+
+TaskEditScreen Input, TaskEditScreen Select {
+    margin-bottom: 1;
+    /* padding: 5 5 5 5; */
 }
 
 .invalid_input {
     background: $error-muted;
     border: tall $error;
+}
+
+#task_start_date_weekday_label, #task_end_date_weekday_label {
+    margin: -1 0 1 2;
 }
 
 /*

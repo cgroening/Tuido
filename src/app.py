@@ -23,7 +23,7 @@ from model.notes_model import Notes
 from model.tasks_model import Tasks
 from model.topics_model import Topic
 from view.main_tabs import MainTabs
-from view.tasks_tab_form import TasksInputPopup, DateName, DateAdjustment
+from view.tasks_tab_edit_screen import TaskEditScreen
 from util.question_screen import QuestionScreen
 
 
@@ -114,29 +114,30 @@ class TuidoApp(App):
         #         description='Date -',
         #         tooltip='Remove the date from the task'),
 
+        # TODO: Delete when transformation to TaskEditScreen is done
         # Tasks controller: Popup
-        Binding(key='f4', key_display='F4', action='tasks_popup_edit_cancel',
-                description='Cancel',
-                tooltip='Discard changes and close the popup'),
-        Binding(key='f5', key_display='F5', action='tasks_popup_edit_save',
-                description='Save',
-                tooltip='Save changes and close the popup'),
-        Binding(key='f7', key_display='F7',
-                action='tasks_popup_edit_decrease_start_date',
-                description='Start-1',
-                tooltip='Decrease the start date by 1 day'),
-        Binding(key='f8', key_display='F8',
-                action='tasks_popup_edit_increase_start_date',
-                description='Start+1',
-                tooltip='Increase the start date by 1 day'),
-        Binding(key='f9', key_display='F9',
-                action='tasks_popup_edit_decrease_end_date',
-                description='End-1',
-                tooltip='Decrease the end date by 1 day'),
-        Binding(key='f10', key_display='F10',
-                action='tasks_popup_edit_increase_end_date',
-                description='End+1',
-                tooltip='Increase the end date by 1 day'),
+        # Binding(key='f4', key_display='F4', action='tasks_popup_edit_cancel',
+        #         description='Cancel',
+        #         tooltip='Discard changes and close the popup'),
+        # Binding(key='f5', key_display='F5', action='tasks_popup_edit_save',
+        #         description='Save',
+        #         tooltip='Save changes and close the popup'),
+        # Binding(key='f7', key_display='F7',
+        #         action='tasks_popup_edit_decrease_start_date',
+        #         description='Start-1',
+        #         tooltip='Decrease the start date by 1 day'),
+        # Binding(key='f8', key_display='F8',
+        #         action='tasks_popup_edit_increase_start_date',
+        #         description='Start+1',
+        #         tooltip='Increase the start date by 1 day'),
+        # Binding(key='f9', key_display='F9',
+        #         action='tasks_popup_edit_decrease_end_date',
+        #         description='End-1',
+        #         tooltip='Decrease the end date by 1 day'),
+        # Binding(key='f10', key_display='F10',
+        #         action='tasks_popup_edit_increase_end_date',
+        #         description='End+1',
+        #         tooltip='Increase the end date by 1 day'),
 
 
         # Topics controller
@@ -382,8 +383,13 @@ class TuidoApp(App):
 
         self.compare_input_value_to_original(event)
 
-    def on_tasks_input_popup_submit(self, message: TasksInputPopup.Submit) \
+    # def on_tasks_input_popup_submit(self, message: TasksInputPopup.Submit) \
+    # -> None:
+    #     self.tasks_controller.save_task(message)
+
+    def on_task_edit_screen_submit(self, message: TaskEditScreen.Submit) \
     -> None:
+        logging.info(f'on_tasks_tab_edit_screen_submit: {message}')
         self.tasks_controller.save_task(message)
 
     def on_select_changed(self, event: Select.Changed) -> None:
@@ -534,49 +540,49 @@ class TuidoApp(App):
         else:
             self.notify('Deletion canceled.', severity='warning')
 
-    def action_tasks_popup_edit_cancel(self) -> None:
-        """
-        Closes the task form popup without saving changes.
-        """
-        self.main_tabs.tasks_tab.input_form.clear_and_hide()
+    # def action_tasks_popup_edit_cancel(self) -> None:
+    #     """
+    #     Closes the task form popup without saving changes.
+    #     """
+    #     self.main_tabs.tasks_tab.input_form.clear_and_hide()
 
-    def action_tasks_popup_edit_save(self) -> None:
-        """
-        Saves the changes made in the task form popup and closes it.
-        """
-        self.main_tabs.tasks_tab.input_form.submit_changes()
+    # def action_tasks_popup_edit_save(self) -> None:
+    #     """
+    #     Saves the changes made in the task form popup and closes it.
+    #     """
+    #     self.main_tabs.tasks_tab.input_form.submit_changes()
 
-    def action_tasks_popup_edit_decrease_start_date(self) -> None:
-        """
-        Decreases the start date of the task by 1 day.
-        """
-        self.main_tabs.tasks_tab.input_form.adjust_date(
-            DateName.START_DATE, DateAdjustment.DECREASE
-        )
+    # def action_tasks_popup_edit_decrease_start_date(self) -> None:
+    #     """
+    #     Decreases the start date of the task by 1 day.
+    #     """
+    #     self.main_tabs.tasks_tab.input_form.adjust_date(
+    #         DateName.START_DATE, DateAdjustment.DECREASE
+    #     )
 
-    def action_tasks_popup_edit_increase_start_date(self) -> None:
-        """
-        Decreases the start date of the task by 1 day.
-        """
-        self.main_tabs.tasks_tab.input_form.adjust_date(
-            DateName.START_DATE, DateAdjustment.INCREASE
-        )
+    # def action_tasks_popup_edit_increase_start_date(self) -> None:
+    #     """
+    #     Decreases the start date of the task by 1 day.
+    #     """
+    #     self.main_tabs.tasks_tab.input_form.adjust_date(
+    #         DateName.START_DATE, DateAdjustment.INCREASE
+    #     )
 
-    def action_tasks_popup_edit_decrease_end_date(self) -> None:
-        """
-        Decreases the start date of the task by 1 day.
-        """
-        self.main_tabs.tasks_tab.input_form.adjust_date(
-            DateName.END_DATE, DateAdjustment.DECREASE
-        )
+    # def action_tasks_popup_edit_decrease_end_date(self) -> None:
+    #     """
+    #     Decreases the start date of the task by 1 day.
+    #     """
+    #     self.main_tabs.tasks_tab.input_form.adjust_date(
+    #         DateName.END_DATE, DateAdjustment.DECREASE
+    #     )
 
-    def action_tasks_popup_edit_increase_end_date(self) -> None:
-        """
-        Decreases the start date of the task by 1 day.
-        """
-        self.main_tabs.tasks_tab.input_form.adjust_date(
-            DateName.END_DATE, DateAdjustment.INCREASE
-        )
+    # def action_tasks_popup_edit_increase_end_date(self) -> None:
+    #     """
+    #     Decreases the start date of the task by 1 day.
+    #     """
+    #     self.main_tabs.tasks_tab.input_form.adjust_date(
+    #         DateName.END_DATE, DateAdjustment.INCREASE
+    #     )
 
     def action_topics_new(self) -> None:
         """

@@ -9,7 +9,6 @@ from textual.widgets import Static, ListView, ListItem, Label
 from rich.text import Text
 
 from model.tasks_model import Task, TaskPriority
-from view.tasks_tab_form import TasksInputPopup
 
 
 class CustomListView(ListView):
@@ -200,10 +199,10 @@ class TasksTab(Static):
                         self.list_views[column_name] = list_view
                         yield list_view
 
-        self.input_form = TasksInputPopup(self.tuido_app, self.list_views,
-                                          id='tasks-input-popup')
-        self.input_form.display = False
-        yield self.input_form
+        # self.input_form = TasksInputPopup(self.tuido_app, self.list_views,
+        #                                   id='tasks-input-popup')
+        # self.input_form.display = False
+        # yield self.input_form
 
     def create_list_items(self, column_name: str) -> list[ListItem]:
         """

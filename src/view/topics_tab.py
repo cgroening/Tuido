@@ -110,7 +110,6 @@ class TopicFormWidgets(VerticalGroup):
                     yield self.create_form_element(form_col)
 
 
-
     def create_form_element(
         self, form_col: dict[str, str | int | float | bool ]
     ) -> VerticalGroup:
@@ -244,5 +243,3 @@ class TopicsTab(Static):
         vscroll.id = 'form_widgets_container'
         with vscroll:
             yield TopicFormWidgets()
-
-

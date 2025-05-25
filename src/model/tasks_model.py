@@ -12,7 +12,6 @@ from pylightlib.msc.Singleton import Singleton  # type: ignore
 from model.config_model import Config  # type: ignore
 
 
-
 class TaskPriority(enum.Enum):
     """
     Enum for task priority levels.
@@ -155,13 +154,16 @@ class Tasks(metaclass=Singleton):
         )
 
     def add_task_to_dict_from_raw_data(self, column_name: str,
-                                       task_dict: dict[str, str]) -> None:
+                                       task_dict: dict[str, str]) -> Task:
         """
         Adds a task to the tasks dictionary from raw data.
 
         Args:
             column_name: The name of the column the task belongs to.
             task_dict: The raw data dictionary containing task information.
+
+        Returns:
+            The Task object that was added to the tasks dictionary.
         """
         # Create task object and add it to the tasks dictionary
         task = self.create_task_object_from_raw_data(
@@ -171,6 +173,8 @@ class Tasks(metaclass=Singleton):
 
         # Sort the tasks for the column_name by priority
         self.tasks[column_name].sort(key=lambda task: task.priority.value)
+
+        return task
 
     def delete_task(self, column_name: str, task_index: int) -> None:
         """
