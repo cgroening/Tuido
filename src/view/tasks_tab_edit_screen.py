@@ -4,14 +4,17 @@ from enum import Enum
 from datetime import datetime, timedelta
 from typing import Any
 
+from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.containers import Container, Horizontal, HorizontalGroup, Vertical, VerticalGroup
 from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Input, Label, Select, MaskedInput, ListView, Static, Footer
 
 from model.tasks_model import Task, TaskPriority  # type: ignore
 from model.config_model import Config  # type: ignore
+from util.question_screen import QuestionScreen  # type: ignore
 
 
 class DateName(Enum):
@@ -42,6 +45,7 @@ class TaskEditScreen(ModalScreen):
         end_date_input: Input field for end date.
         end_date_label: Label for displaying the end date.
         invalid_inputs: Set of IDs of invalid input fields.
+        original_task: The original task object, if any, to be edited.
     """
     tuido_app: App
     list_views: dict[str, ListView | Any] = {}
@@ -52,6 +56,7 @@ class TaskEditScreen(ModalScreen):
     end_date_input: MaskedInput
     end_date_weekday_label: Label
     invalid_inputs: set[str] = set()
+    original_task: Task | None = None
 
     BINDINGS = [
         Binding(key='escape', key_display='ESC', action='close_modal',
@@ -119,7 +124,7 @@ class TaskEditScreen(ModalScreen):
         )
 
         self.start_date_weekday_label = Label(
-            '(Wednesday)', id='task_start_date_weekday_label'
+            '', id='task_start_date_weekday_label'
         )
 
         self.end_date_input = MaskedInput(
@@ -127,7 +132,7 @@ class TaskEditScreen(ModalScreen):
         )
 
         self.end_date_weekday_label = Label(
-            '(Wednesday)', id='task_end_date_weekday_label'
+            '', id='task_end_date_weekday_label'
         )
 
     def compose(self) -> ComposeResult:
@@ -138,8 +143,6 @@ class TaskEditScreen(ModalScreen):
         end date, and a submit button.
         """
         with Static(id='main_container'):
-            # with VerticalGroup():
-            # Description
             yield Label('Description:')
             yield self.description_input
 
@@ -147,24 +150,50 @@ class TaskEditScreen(ModalScreen):
             yield Label('Priority:')
             yield self.priority_input
 
-            # Start Date
-            yield Label('Start Date:')
-                # with HorizontalGroup():
-            yield self.start_date_input
-            yield self.start_date_weekday_label
+            # # Start Date
+            # yield Label('Start Date:')
+            # yield HorizontalGroup(
+            #     self.start_date_input,
+            #     self.start_date_weekday_label
+            # )
 
-            # End Date
-            yield Label('End Date:')
-            yield self.end_date_input
-            yield self.end_date_weekday_label
+            # # End Date
+            # yield Label('End Date:')
+            # yield HorizontalGroup(
+            #     self.end_date_input,
+            #     self.end_date_weekday_label
+            # )
+
+            with HorizontalGroup():
+
+                # Start Date
+                with VerticalGroup():
+                    yield Label('Start Date:')
+                    yield HorizontalGroup(
+                        self.start_date_input,
+                        self.start_date_weekday_label
+                    )
+
+                # End Date
+                with VerticalGroup():
+                    yield Label('End Date:')
+                    yield HorizontalGroup(
+                        self.end_date_input,
+                        self.end_date_weekday_label
+                    )
 
             yield Footer()
 
-    def action_close_modal(self) -> None:
+    @work
+    async def action_close_modal(self) -> None:
         """
-        Closes the modal popup without saving changes.
+        Closes the modal popup without saving changes. Aks the user to confirm
+        if there are unsaved changes.
         """
-        self.app.pop_screen()
+        discard = await self.discard_unsaved_changes()
+
+        if discard:
+            self.app.pop_screen()
 
     def action_save(self) -> None:
         """
@@ -197,6 +226,49 @@ class TaskEditScreen(ModalScreen):
         """
         self.adjust_date(DateName.END_DATE, DateAdjustment.INCREASE)
 
+    async def discard_unsaved_changes(self) -> bool:
+        """
+        Checks if there are unsaved changes in the popup.
+
+        If there are unsaved changes, it prompts the user to confirm if they
+        want to discard the changes. Returns True if the user confirms, False
+        otherwise.
+        """
+        # Parse the priority input value to compare with the original task
+        tasks_model = self.tuido_app.tasks_controller.tasks_model
+        priority_input_value = tasks_model.num_to_priority(tasks_model.priority_str_to_num(self.priority_input.value))
+
+        # If there is no original task it means a new task is being created,
+        # create a default original task object then to compare with user input
+        if self.original_task:
+            original_task = self.original_task
+        else:
+            original_task = Task(
+                column_name='',
+                description='',
+                priority=TaskPriority.LOW,
+                start_date='',
+                end_date='',
+                days_to_start=None,
+                days_to_end=None
+            )
+
+        # Compare user input with the original task to check for changes
+        if (
+            self.description_input.value != original_task.description or
+            priority_input_value != original_task.priority or
+            self.start_date_input.value != original_task.start_date or
+            self.end_date_input.value != original_task.end_date
+        ):
+            # There are unsaved changes, ask for confirmation
+            if await self.tuido_app.push_screen_wait(
+                QuestionScreen('Discard unsaved changes?'),
+            ):
+                return True
+            else:
+                return False
+        return True
+
     def set_input_values(self, task: Task):
         """
         Sets the input values in the popup based on the provided task.
@@ -204,6 +276,7 @@ class TaskEditScreen(ModalScreen):
         Args:
             task: The task object containing the values to be set.
         """
+        self.original_task = task
         self.description_input.value = task.description
 
         match task.priority:
@@ -213,10 +286,18 @@ class TaskEditScreen(ModalScreen):
                 task_priority = 'Medium'
             case _:
                 task_priority = 'Low'
-        self.priority_input.value = task_priority
+
+        # self.priority_input.value = task_priority
+        self.call_after_refresh(self._set_priority_value, task_priority)
 
         self.start_date_input.value = task.start_date
         self.end_date_input.value = task.end_date
+
+    def _set_priority_value(self, priority: str):
+        """
+        Helper method to set the priority input value delayed.
+        """
+        self.priority_input.value = priority
 
     def adjust_date(self, date_name: DateName, adjustment: DateAdjustment) \
     -> None:

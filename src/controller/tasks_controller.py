@@ -211,15 +211,8 @@ class TasksController:
         tasks_controller = self.tuido_app.tasks_controller  # type: ignore
         tasks_tab = self.tuido_app.main_tabs.tasks_tab      # type: ignore
 
-        # Get the name of the list view to be focused and the index of the
-        # task to be selected based on the task action (new or edit)
-        if tasks_controller.task_action.value == 'new':
-            list_view_name = config.task_column_names[0]
-            task_index = tasks_controller.index_of_new_task
-        else:
-            list_view_name = tasks_tab.selected_column_name
-            # task_index = tasks_tab.selected_task_index
-            task_index = tasks_controller.index_of_new_task
+        list_view_name = tasks_tab.selected_column_name
+        task_index = tasks_controller.index_of_new_task
 
         # Get the list view instance and set its state to enabled
         list_view = tasks_tab.list_views[list_view_name]
@@ -317,7 +310,28 @@ class TasksController:
         column_name = tasks_tab.selected_column_name
         selected_task_index = tasks_tab.selected_task_index
 
+        # Delete the selected task if one is selected
         if selected_task_index is not None:
             self.tasks_model.delete_task(column_name, selected_task_index)
             self.tasks_model.save_to_file()
             self.recreate_list_view(column_name)
+
+        # Selection of the tasks that jumps into the position of the deleted one
+        asyncio.get_event_loop().call_soon(
+            lambda: self._select_task(
+                selected_task_index, len(self.tasks_model.tasks[column_name])
+            )
+        )
+
+    def _select_task(self, task_index: int, list_length: int) -> None:
+        """
+        Selects a task in the specified list view.
+
+        Args:
+            task_index: The index of the task to select.
+            list_length: The length of the list to ensure the index is valid.
+        """
+        if list_length > 0:
+            new_index = min(task_index, list_length - 1)
+            self.index_of_new_task = new_index
+            self.reselect_list_view_item()

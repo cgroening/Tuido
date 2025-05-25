@@ -60,6 +60,9 @@ class TuidoApp(App):
 
 
     BINDINGS = [
+        # Binding(key='c', key_display='^c', action='shortcut_test'),
+        # Binding(key='meta+c', key_display='^c', action='shortcut_test'),
+
         # Global
         Binding(key='q', key_display='q', action='app_previous_tab',
                 description='Tab ←',
@@ -501,6 +504,9 @@ class TuidoApp(App):
     #     else:
     #         # logging.info('No widget focused')
     #         self.notify('No widget focused')
+    def action_shortcut_test(self) -> None:
+        self.notify('The shortcut was triggered!')
+
 
     def action_tasks_new(self) -> None:
         """

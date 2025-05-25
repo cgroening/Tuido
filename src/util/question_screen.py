@@ -1,41 +1,19 @@
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
-from textual.screen import Screen
+from textual.containers import Grid, Horizontal, Vertical
+from textual.screen import Screen, ModalScreen
 from textual.widgets import Button, Label
 from textual import on
 
 
-class QuestionScreen(Screen[bool]):
+# class QuestionScreen(Screen[bool]):
+class QuestionScreen(ModalScreen[bool]):
     """
     A screen that asks a question and returns the answer as a boolean value.
     """
+    BINDINGS = [
+        ('escape', 'close_modal', 'Close'),
+    ]
 
-    CSS = """
-    QuestionScreen {
-        align: center middle;
-        content-align: center middle;
-    }
-
-    .question-container {
-        align: center middle;
-        height: auto;
-        padding-top: 3;
-        width: auto;
-    }
-
-    .question-label {
-        content-align: center middle;
-        margin-bottom: 1;
-        text-align: center;
-        width: 100%;
-    }
-
-    .button-container {
-        align-horizontal: center;
-        margin-top: 1;
-        width: auto;
-    }
-    """
 
     def __init__(self, question: str) -> None:
         """
@@ -48,11 +26,18 @@ class QuestionScreen(Screen[bool]):
         """
         Compose the screen layout.
         """
-        with Vertical(classes="question-container"):
-            yield Label(self.question, classes="question-label")
-            with Horizontal(classes="button-container"):
-                yield Button('Yes', id='yes', variant='success')
-                yield Button('No', id='no')
+        yield Grid(
+            Label(self.question, id='question'),
+            Button('Yes', variant='error', id='yes'),
+            Button('No', variant='primary', id='no'),
+            id='dialog',
+        )
+
+    def action_close_modal(self) -> None:
+        """
+        Closes the modal popup.
+        """
+        self.app.pop_screen()
 
     @on(Button.Pressed, '#yes')
     def handle_yes(self) -> None:
