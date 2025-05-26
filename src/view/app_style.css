@@ -222,6 +222,7 @@ TextArea#notes_textarea {
 }
 
 Markdown {
-    margin: 0 1 1 1;
     border: none;
+    margin: 0 1 1 1;
+    padding: 1 3 0 3;
 }

@@ -137,6 +137,10 @@ Notes are intended to be transient – they're not part of a long-term knowledge
 - [ ] Validations for topic fields
 - [ ] More field functions for topics
 
+### Version 0.7 - Polished UI
+
+- [ ] Compact mode which removes the inner spacing of input widgets
+
 ### Possible Future Features
 
 - [ ] Multilingual support

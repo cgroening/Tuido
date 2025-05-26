@@ -181,16 +181,19 @@ class TuidoApp(App):
         Binding(key='f11', key_display='F11',
                 action='app_copy_selection_to_clipboard',
                 description='CpySel',
-                tooltip='Copy the selected text to the clipboard'),
+                tooltip='Copy the selected text to the clipboard',
+                show=False),
         Binding(key='f12', key_display='F12',
                 action='app_paste_from_clipboard',
                 description='Paste',
-                tooltip='Paste the text from the clipboard'),
+                tooltip='Paste the text from the clipboard',
+                show=False),
 
-        Binding(key='shift+f11', key_display='S+F11',
+        Binding(key='shift+f11', key_display='⇧F11',
                 action='app_copy_widget_value_to_clipboard',
                 description='CpyVal',
-                tooltip='Copy value of the selected input widget to clipboard'),
+                tooltip='Copy value of the selected input widget to clipboard',
+                show=False),
     ]
 
 
