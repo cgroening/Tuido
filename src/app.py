@@ -1,29 +1,21 @@
 import argparse
 import logging
-from pprint import pprint  # type: ignore # noqa
 
-
-from textual import work, events
+from textual import work
 from textual.app import App, ComposeResult
-# from textual.events import DataTableRowHighlighted
 from textual.binding import Binding
 from textual.widget import Widget
 from textual.widgets import Footer, Header, Tabs, DataTable, Input, Select, TextArea, Markdown
-from textual.containers import Vertical
-from textual.screen import ModalScreen
-from rich.text import Text  # type: ignore # noqa
 
-from pylightlib.msc.Singleton import Singleton  # type: ignore
-
-from controller.topics_controller import TopicsController
-from controller.tasks_controller import TasksController, TaskAction, TaskMoveDirection
-from controller.notes_controller import NotesController
 from model.config_model import Config
 from model.notes_model import Notes
 from model.tasks_model import Tasks
 from model.topics_model import Topic
 from view.main_tabs import MainTabs
 from view.tasks_tab_edit_screen import TaskEditScreen
+from controller.topics_controller import TopicsController
+from controller.tasks_controller import TasksController, TaskAction, TaskMoveDirection
+from controller.notes_controller import NotesController
 from util.question_screen import QuestionScreen
 
 

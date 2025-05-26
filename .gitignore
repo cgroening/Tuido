@@ -9,6 +9,7 @@
 
 # Misc
 **/*.log
+log/
 *ignore/
 
 # Byte-compiled / optimized / DLL files

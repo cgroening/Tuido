@@ -2,13 +2,10 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.reactive import reactive
 from textual.widgets import Tabs, Tab
-from rich.text import Text  # type: ignore # noqa
 
 from view.topics_tab import TopicsTab
 from view.tasks_tab import TasksTab
 from view.notes_tab import NotesTab
-
-from pylightlib.msc.Singleton import Singleton  # type: ignore
 
 
 class MainTabs(Container):

@@ -6,7 +6,7 @@ Tuido is a simple productivity application that provides a text user interface (
 
 Many productivity apps offer an overwhelming number of features that you often don't actually need. Their complexity might slow you down. Tuido takes a different approach: minimalism. It gives you a clean, reliable space to plan your day as efficiently as possible.
 
-The components are built using the Textual library, offering a modern terminal UI experience focused on clarity and interactivity.
+The components are built using the [Textual](https://github.com/Textualize/textual) and [Rich](https://github.com/Textualize/rich) library, offering a modern terminal UI experience focused on clarity and interactivity.
 
 The purpose of this application is to provide a space for planning and organizing the current day. With its keyboard-driven, minimalist interface, it aims to support an efficient workflow. It is not intended for long-term planning and is meant to complement apps like Notion or OneNote, not replace them.
 

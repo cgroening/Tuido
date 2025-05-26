@@ -1,4 +1,3 @@
-import argparse
 import logging
 from app import TuidoApp
 
@@ -11,8 +10,12 @@ from app import TuidoApp
 #                         format="%(asctime)s [%(levelname)s] %(message)s")
 # _ = logging.getLogger(__name__)
 
-logging.basicConfig(filename="data/info.log", filemode="w", level=logging.INFO,
-                        format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    filename="log/info.log",
+    filemode="w",
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
 _ = logging.getLogger(__name__)
 
 
