@@ -7,6 +7,8 @@ from textual.binding import Binding
 from textual.widget import Widget
 from textual.widgets import Footer, Header, Tabs, DataTable, Input, Select, TextArea, Markdown
 
+from pylightlib.txtl.QuestionScreen import QuestionScreen
+
 from model.config_model import Config
 from model.notes_model import Notes
 from model.tasks_model import Tasks
@@ -16,7 +18,6 @@ from view.tasks_tab_edit_screen import TaskEditScreen
 from controller.topics_controller import TopicsController
 from controller.tasks_controller import TasksController, TaskAction, TaskMoveDirection
 from controller.notes_controller import NotesController
-from util.question_screen import QuestionScreen
 
 
 class TuidoApp(App):

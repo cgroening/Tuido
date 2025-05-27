@@ -7,14 +7,15 @@ from typing import Any
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal, HorizontalGroup, Vertical, VerticalGroup
+from textual.containers import HorizontalGroup, VerticalGroup
 from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Input, Label, Select, MaskedInput, ListView, Static, Footer
 
-from model.tasks_model import Task, TaskPriority  # type: ignore
-from model.config_model import Config  # type: ignore
-from util.question_screen import QuestionScreen  # type: ignore
+from pylightlib.txtl.QuestionScreen import QuestionScreen
+
+from model.tasks_model import Task, TaskPriority
+from model.config_model import Config
 
 
 class DateName(Enum):
