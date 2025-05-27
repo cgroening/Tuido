@@ -545,7 +545,7 @@ class TuidoApp(App):
         The user will be asked for confirmation before the task is deleted.
         """
         if await self.push_screen_wait(
-            QuestionScreen("Really delete the selected task?"),
+            QuestionScreen('Really delete the selected task?'),
         ):
             self.tasks_controller.delete_selected_task()
             self.notify('Task deleted!')
