@@ -76,7 +76,7 @@ class TopicsController(metaclass=Singleton):
         Creates the columns in the topics table based on the configuration file.
         """
         # Add ID column
-        table.add_column("ID", key="id")
+        table.add_column('ID', key='id')
 
         # Add user defined columns
         for col in self.config.columns:
