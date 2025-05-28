@@ -11,10 +11,10 @@ from app import TuidoApp
 # _ = logging.getLogger(__name__)
 
 logging.basicConfig(
-    filename="log/info.log",
-    filemode="w",
+    filename='log/info.log',
+    filemode='w',
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
+    format='%(asctime)s [%(levelname)s] %(message)s'
 )
 _ = logging.getLogger(__name__)
 
