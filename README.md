@@ -111,16 +111,17 @@ Notes are intended to be transient – they're not part of a long-term knowledge
 
 - [x] Basis topic management (CRUD)
 - [x] Basic task management (CRUD)
+- [x] Basic note taking
 
-### Version 0.2 – Interoperability
-
-- [ ] Import and export tasks as CSV
-- [ ] Import and export topics as CSV
-
-### Version 0.3 – Usability Enhancements
+### Version 0.2 – Usability Enhancements
 
 - [ ] Custom sort order for topics
 - [ ] Filtering and searching topics
+
+### Version 0.3 – Interoperability
+
+- [ ] Import and export tasks as CSV
+- [ ] Import and export topics as CSV
 
 ### Version 0.4 – Extended Customization
 
