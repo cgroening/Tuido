@@ -237,7 +237,6 @@ class TuidoApp(App):
         """
         yield Header(icon='🗂️')
         yield self.main_tabs
-        # yield Footer(show_command_palette=False)
         self.footer = Footer(show_command_palette=False)
         self.footer.compact = True
         yield self.footer
