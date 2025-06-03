@@ -63,144 +63,6 @@ class TuidoApp(App):
     escape_pressed_twice = reactive(False, bindings=True)
 
 
-    BINDINGSS = [
-        # Binding(key='c', key_display='^c', action='shortcut_test'),
-        # Binding(key='meta+c', key_display='^c', action='shortcut_test'),
-
-        # Global
-        Binding(key='q', key_display='q', action='app_previous_tab',
-                description='Tab ←',
-                tooltip='Select the previous tab',
-                show=False),
-        Binding(key='w', key_display='w', action='app_next_tab',
-                description='Tab →',
-                tooltip='Select the next tab',
-                show=False),
-        Binding(key='d', key_display='d', action='app_toggle_dark',
-                description='Lights',
-                tooltip='Toggle between dark and light mode',
-                show=False),
-        Binding(key='ctrl+q', key_display='^q', action='quit',
-                description='Quit',
-                tooltip='Quit the app',
-                show=False),
-
-        # Tasks controller
-        Binding(key='f1', key_display='F1', action='tasks_new',
-                description='New',
-                tooltip='Create a new task'),
-        Binding(key='f2', key_display='F2', action='tasks_edit',
-                description='Edit',
-                tooltip='Edit the currently selected task'),
-        Binding(key='f3', key_display='F3', action='tasks_left',
-                description='Move ←',
-                tooltip='Move the currently selected task left'),
-        Binding(key='f4', key_display='F4', action='tasks_right',
-                description='Move →',
-                tooltip='Move the currently selected task right'),
-
-        # Woraround: Ensures the correct order of the bindings in the following
-        # tabs
-        Binding(key='f5', key_display='F5', action='', show=False),
-        Binding(key='f6', key_display='F6', action='', show=False),
-        Binding(key='f7', key_display='F7', action='', show=False),
-
-        Binding(key='f8', key_display='F8', action='tasks_delete',
-                description='Del',
-                tooltip='Delete the currently selected task'),
-        # Binding(key='f5', key_display='F5', action='tasks_today',
-        #         description='Today',
-        #         tooltip='Set start and end date to today'),
-        # Binding(key='f6', key_display='F6', action='tasks_tomorrow',
-        #         description='Tomorrow',
-        #         tooltip='Set start and end date to tomorrow'),
-        # Binding(key='f7', key_display='F7', action='tasks_add_date',
-        #         description='Date +',
-        #         tooltip='Open the date picker to set start and end date'),
-        # Binding(key='f8', key_display='F8', action='tasks_remove_date',
-        #         description='Date -',
-        #         tooltip='Remove the date from the task'),
-
-        # TODO: Delete when transformation to TaskEditScreen is done
-        # Tasks controller: Popup
-        # Binding(key='f4', key_display='F4', action='tasks_popup_edit_cancel',
-        #         description='Cancel',
-        #         tooltip='Discard changes and close the popup'),
-        # Binding(key='f5', key_display='F5', action='tasks_popup_edit_save',
-        #         description='Save',
-        #         tooltip='Save changes and close the popup'),
-        # Binding(key='f7', key_display='F7',
-        #         action='tasks_popup_edit_decrease_start_date',
-        #         description='Start-1',
-        #         tooltip='Decrease the start date by 1 day'),
-        # Binding(key='f8', key_display='F8',
-        #         action='tasks_popup_edit_increase_start_date',
-        #         description='Start+1',
-        #         tooltip='Increase the start date by 1 day'),
-        # Binding(key='f9', key_display='F9',
-        #         action='tasks_popup_edit_decrease_end_date',
-        #         description='End-1',
-        #         tooltip='Decrease the end date by 1 day'),
-        # Binding(key='f10', key_display='F10',
-        #         action='tasks_popup_edit_increase_end_date',
-        #         description='End+1',
-        #         tooltip='Increase the end date by 1 day'),
-
-
-        # Topics controller
-        Binding(key='f1', key_display='F1', action='topics_new',
-                description='New',
-                tooltip='Create a new topic'),
-        Binding(key='f2', key_display='F2', action='topics_focus_table',
-                description='Table',
-                tooltip='Focus the topic list'),
-        Binding(key='f5', key_display='F5', action='topics_save',
-                description='Save',
-                tooltip='Save the currently selected topic'),
-        Binding(key='f7', key_display='F7', action='topics_discard',
-                description='Discard',
-                tooltip='Discard the changes made on the current topic'),
-        Binding(key='f8', key_display='F8', action='topics_delete',
-                description='Del',
-                tooltip='Delete the currently selected topic'),
-
-        # Notes controller
-        # Binding(key='f1', key_display='F1', action='notes_do_something',
-        #         description='Do something',
-        #         tooltip='XXX'),
-        Binding(key='f2', key_display='F2', action='notes_show_textarea',
-            description='Text',
-            tooltip='Show the textarea and markdown'),
-        Binding(key='f3', key_display='F3', action='notes_show_md',
-            description='Markdown',
-            tooltip='Show the textarea and markdown'),
-        Binding(key='f4', key_display='F4', action='notes_show_textarea_and_md',
-            description='Text+Md',
-            tooltip='Show the textarea and markdown'),
-
-        # Global
-        # Binding(key='f9', key_display='F9', action='app_get_focus',
-        #         description='Get focus',
-        #         tooltip='Get ID of the focused widget'),
-        Binding(key='f11', key_display='F11',
-                action='app_copy_selection_to_clipboard',
-                description='CpySel',
-                tooltip='Copy the selected text to the clipboard',
-                show=False),
-        Binding(key='f12', key_display='F12',
-                action='app_paste_from_clipboard',
-                description='Paste',
-                tooltip='Paste the text from the clipboard',
-                show=False),
-
-        Binding(key='shift+f11', key_display='⇧F11',
-                action='app_copy_widget_value_to_clipboard',
-                description='CpyVal',
-                tooltip='Copy value of the selected input widget to clipboard',
-                show=False),
-    ]
-
-
     def __init__(self) -> None:
         """
         Initializes the app.
@@ -317,6 +179,18 @@ class TuidoApp(App):
             action, parameters, active_group=str(self.main_view.current_tab_name),
             show_global_keys=bool(self.escape_pressed_twice)
         )
+
+    async def action_global_copy_widget_value_to_clipboard(self) -> None:
+        CUSTOM_BINDINGS.handle_copy_widget_value_to_clipboard(self)
+
+    async def action_global_copy_selection_to_clipboard(self) -> None:
+        CUSTOM_BINDINGS.handle_copy_selection_to_clipboard_action(self)
+
+    async def action_global_paste_from_clipboard(self) -> None:
+        CUSTOM_BINDINGS.handle_paste_from_clipboard(self)
+
+    async def action_global_replace_widget_value_from_clipboard(self) -> None:
+        CUSTOM_BINDINGS.handle_paste_from_clipboard(self, replace=True)
 
     def action_globalalways_toggle_dark(self) -> None:
         """
