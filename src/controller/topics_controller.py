@@ -11,7 +11,7 @@ from pylightlib.msc.DateTime import DateTime  # type: ignore
 
 from model.config_model import Config, FieldType, FieldDefinition  # type: ignore
 from model.topics_model import Topic    # type: ignore
-from view.main_tabs import MainTabs  # type: ignore
+from view.main_view import MainTabs  # type: ignore
 
 
 class TopicAction(enum.Enum):

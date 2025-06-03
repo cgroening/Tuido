@@ -1,23 +1,28 @@
 import argparse
 import logging
 
-from textual import work
+from textual import events, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Footer, Header, Tabs, DataTable, Input, Select, TextArea, Markdown
 
+from pylightlib.txtl import CustomBindings
 from pylightlib.txtl.QuestionScreen import QuestionScreen
 
 from model.config_model import Config
 from model.notes_model import Notes
 from model.tasks_model import Tasks
 from model.topics_model import Topic
-from view.main_tabs import MainTabs
+from view.main_view import MainTabs
 from view.tasks_tab_edit_screen import TaskEditScreen
 from controller.topics_controller import TopicsController
 from controller.tasks_controller import TasksController, TaskAction, TaskMoveDirection
 from controller.notes_controller import NotesController
+
+
+CUSTOM_BINDINGS = CustomBindings(with_copy_paste_keys=True)
 
 
 class TuidoApp(App):
@@ -28,31 +33,37 @@ class TuidoApp(App):
     managing topics, tasks and notes.
 
     Attributes:
-        TITLE: The title of the app.
-        CSS_PATH: The path to the CSS file for styling.
         config: The configuration object for the app.
         topics_model: The topics model.
         notes_model: The notes model.
         topics_controller: The controller object for managing topics.
         notes_controller: The controller object for managing notes.
-        main_tabs: The main tabs widget for the app.
+        main_view: Main view of the application, containing the main layout
+            and widgets.
         popup_name: The name of the currently displayed popup; None if no
             popup is shown.
         footer: The footer widget of the app.
+        last_escape_key: Timestamp of the last 'escape' key press, used to
+            toggle global key bindings.
+        escape_pressed_twice: Reactive flag indicating whether the 'escape' key
+            was pressed twice.
     """
     TITLE = "Tuido"
     CSS_PATH = 'view/app_style.css'
+    BINDINGS = CUSTOM_BINDINGS.get_bindings()  # type: ignore
     config: Config
     topics_model: Topic
     notes_model: Notes
-    main_tabs: MainTabs
+    main_view: MainTabs
     topics_controller: TopicsController
     notes_controller: NotesController
     popup_name: str | None = None
     footer: Footer
+    last_escape_key: float = 0.0
+    escape_pressed_twice = reactive(False, bindings=True)
 
 
-    BINDINGS = [
+    BINDINGSS = [
         # Binding(key='c', key_display='^c', action='shortcut_test'),
         # Binding(key='meta+c', key_display='^c', action='shortcut_test'),
 
@@ -214,19 +225,19 @@ class TuidoApp(App):
         self.notes_model = Notes(f'{data_folder}/notes.md')
 
         # Views
-        self.main_tabs = MainTabs(self)
+        self.main_view = MainTabs(self)
 
         # Controllers
         self.tasks_controller = TasksController(
-            self.config, self.tasks_model, self.main_tabs, self
+            self.config, self.tasks_model, self.main_view, self
         )
 
         self.topics_controller = TopicsController(
-            self.config, self.topics_model, self.main_tabs
+            self.config, self.topics_model, self.main_view
         )
 
         self.notes_controller = NotesController(
-            self.config, self.notes_model, self.main_tabs
+            self.config, self.notes_model, self.main_view
         )
 
         logging.info('App initialized')
@@ -236,7 +247,7 @@ class TuidoApp(App):
         Creates the child widgets.
         """
         yield Header(icon='🗂️')
-        yield self.main_tabs
+        yield self.main_view
         self.footer = Footer(show_command_palette=False)
         self.footer.compact = True
         yield self.footer
@@ -257,7 +268,7 @@ class TuidoApp(App):
         table = self.query_one("#topics_table", expect_type=DataTable)
         self.topics_controller.initialize_topics_table(table)
 
-        self.main_tabs.tasks_tab.set_can_focus()
+        self.main_view.tasks_tab.set_can_focus()
 
     def on_ready(self) -> None:
         """
@@ -266,239 +277,70 @@ class TuidoApp(App):
         # self.topics_controller.app_startup = False
         pass
 
-    def check_action(self, action: str, parameters: tuple[object, ...]) \
-        -> None | bool:
+    async def on_key(self, event: events.Key) -> None:
         """
-        Checks if the action is valid for the current tab. The name of the
-        action must follow the following scheme:
-        `action_<controller_name>_<action_name>`.
+        Handles key press events.
+
+        If the 'escape' key is pressed, it toggles the global key bindings
+        based on the time interval between presses.
+
+        Args:
+            event: The key press event.
+        """
+        # self.notify(f'Key pressed: {event.key}')
+        if event.key == 'escape':
+            if event.time - self.last_escape_key < 0.5:
+                self.escape_pressed_twice = not self.escape_pressed_twice
+
+            self.last_escape_key = event.time
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) \
+    -> bool | None:
+        """
+        Checks if the action is valid for the current context.
+
+        If the action is recognized, it will be handled by the
+        `CUSTOM_BINDINGS` instance. The action is checked against the
+        current active group (tab) and whether global keys should be shown
+        based on the `escape_pressed_twice` flag.
 
         Args:
             action: The action to check.
-            parameters: The parameters for the action.
+            parameters: Parameters for the action.
 
         Returns:
-            - `True` if the action is valid for the current tab, the
-              corresponding key will be shown in the footer.
-            - `False` if the action is not valid for the current tab, the
-              corresponding key will not be shown in the footer.
-            - `None` if the action is valid for the current tab but not the
-              current state, the key will be grayed out in the footer.
-
-        See also:
-            https://textual.textualize.io/guide/actions/#dynamic-actions
+            bool | None: True if the corresponding key of the action is to be
+                displayed or None if not. False if the action is valid for the
+                current context but is to be displayed as disabled.
         """
-        # Hide shortcut key if the action is not defined
-        if action == '':
-            return False
-
-        # List of global actions that are valid for all tabs
-        GLOBAL_ACTIONS = ['app', 'quit', 'copy_to_clipboard',
-                          'focus_next', 'focus_previous']
-
-        if action in GLOBAL_ACTIONS:
-            return True
-
-        # Get name if the current tab
-        current_tab = self.main_tabs.current_tab
-
-        # Extract the name of the controller from the action
-        controller_name = action.split('_')[0]
-
-        # Check if a popup is shown and if action is valid for it
-        if self.popup_name is not None:
-            if len(action.split('_')) <= 2 or action.split('_')[1] != 'popup':
-                return False
-
-            if action.split('_')[2] == self.popup_name:
-                return True
-            else:
-                return False
-        else:
-            # Hide bindings for popups when no popup is shown
-            if len(action.split('_')) > 2 and action.split('_')[1] == 'popup':
-                return False
-
-        # Check if the action is valid for the current tab
-        if controller_name in ['topics', 'tasks', 'notes', 'app']:
-            if controller_name == current_tab \
-                or controller_name in GLOBAL_ACTIONS \
-                or action == 'command_palette':
-                return True
-            else:
-                return False
-        return True
-
-    async def on_data_table_row_highlighted(
-        self, event: DataTable.RowHighlighted
-    ) -> None:
-        """
-        Is triggered when a row in the DataTable is highlighted.
-        This method updates the input fields with the values from the
-        selected row.
-
-        Args:
-            event: The event containing information about the
-            highlighted row.
-        """
-        self.topics_controller.update_input_fields(
-            lambda id: self.query_one(id)
+        return CUSTOM_BINDINGS.handle_check_action(
+            action, parameters, active_group=str(self.main_view.current_tab_name),
+            show_global_keys=bool(self.escape_pressed_twice)
         )
 
-        # Disable startup state after first selection
-        # This is necessary to prevent the input fields from being
-        # marked as changed when the app starts
-        # and the topics table is initialized
-        self.topics_controller.app_startup = False
-
-    def on_input_changed(self, event: Input.Changed) -> None:
+    def action_globalalways_toggle_dark(self) -> None:
         """
-        Is triggered when the value of an Input is changed.
-        If the input field is changed programmatically, it will be ignored.
-        Otherwise, `self.compare_input_value_to_original` is called.
-
-        Args:
-            event: The event containing information about the changed input.
+        Toggles dark mode.
         """
-        input_name = event.input.id
-        if input_name in self.topics_controller.programmatically_changed_inputs:
-            self.topics_controller.programmatically_changed_inputs \
-                .remove(input_name)
-            return
+        self.theme = (
+            'textual-dark' if self.theme == 'textual-light' else 'textual-light'
+        )
 
-        self.compare_input_value_to_original(event)
-
-    def on_text_area_changed(self, event: TextArea.Changed) -> None:
+    def action_globalalways_previous_tab(self) -> None:
         """
-        Is triggered when the value of a TextArea is changed.
-        If the input field is changed programmatically, it will be ignored.
-        Otherwise, `self.compare_input_value_to_original` is called.
-
-        Args:
-            event: The event containing information about the changed input.
+        Selects the previous tab.
         """
-        input_name = event.text_area.id
+        tabs = self.query_one('#main_tabs', expect_type=Tabs)
+        tabs.action_previous_tab()
 
-        # logging.info(f'input_name: {input_name}')
-
-        # # TODO: Prüfen, ob topics_.... oder notes....
-
-        if input_name in self.topics_controller.programmatically_changed_inputs:
-            self.topics_controller.programmatically_changed_inputs.remove(
-                input_name
-            )
-            return
-
-        self.compare_input_value_to_original(event)
-
-    # def on_tasks_input_popup_submit(self, message: TasksInputPopup.Submit) \
-    # -> None:
-    #     self.tasks_controller.save_task(message)
-
-    def on_task_edit_screen_submit(self, message: TaskEditScreen.Submit) \
-    -> None:
-        logging.info(f'on_tasks_tab_edit_screen_submit: {message}')
-        self.tasks_controller.save_task(message)
-
-    def on_select_changed(self, event: Select.Changed) -> None:
+    def action_globalalways_next_tab(self) -> None:
         """
-        Is triggered when the value of a Select is changed.
-        If the input field is changed programmatically, it will be ignored.
-        Otherwise, `self.compare_input_value_to_original` is called.
-
-        Args:
-            event: The event containing information about the changed select.
+        Selects the next tab.
         """
-        input_name = event.select.id
-        if input_name in self.topics_controller.programmatically_changed_inputs:
-            self.topics_controller.programmatically_changed_inputs \
-                .remove(input_name)
-            return
+        tabs = self.query_one('#main_tabs', expect_type=Tabs)
+        tabs.action_next_tab()
 
-        self.compare_input_value_to_original(event)
 
-    def compare_input_value_to_original(
-        self, event: Input.Changed | TextArea.Changed | Select.Changed
-    ) -> None:
-        """
-        Compares the current value of the input field to the original value
-        from the model. If the values are different, the input field is
-        marked as changed and the topics table is deactivated. If the
-        values are the same, the input field is marked as unchanged and
-        the topics table is activated.
-
-        Args:
-            event: The event containing information about the changed input.
-        """
-        # TODO: Cleanup/extract code to separate methods
-
-        input_widget: Input | TextArea | Select
-
-        # Get the input widget that triggered the event and the value of it
-        if isinstance(event, Input.Changed):
-            input_widget = event.input
-            current_value = input_widget.value
-        elif isinstance(event, TextArea.Changed):
-            input_widget = event.text_area
-            current_value = input_widget.text
-        elif isinstance(event, Select.Changed):
-            input_widget = event.select
-            current_value = input_widget.value
-        else:
-            return
-
-        # Ignore events from tabs other than "Topics"
-        if input_widget.id is None or not input_widget.id.startswith('topics_'):
-            return
-
-        if current_value == Select.BLANK:
-            current_value = ''
-
-        # Get original value from the model
-        topics_ctrl = self.topics_controller
-        topic_id = self.main_tabs.topics_tab.topics_table.get_current_id()
-        field_name = input_widget.id.replace('topics_', '') \
-                                    .replace('_input', '')
-
-        if field_name in topics_ctrl.topics_model.topics_by_id[topic_id].keys():
-            original_value = topics_ctrl.topics_model \
-                             .topics_by_id[topic_id][field_name]
-        else:
-            original_value = ''
-
-        # Debugging
-        # logging.info(
-        #     f'compare_input_value_to_original: {input_widget.id} ' +
-        #     f'current_value: {current_value}, ' +
-        #     f'original_value: {original_value}')
-
-        # Compare current value to original value
-        if current_value == original_value:
-            input_widget.remove_class('changed-input')
-
-            if input_widget.id in topics_ctrl.user_changed_inputs:
-                topics_ctrl.user_changed_inputs.remove(input_widget.id)
-        else:
-            input_widget.add_class('changed-input')
-            topics_ctrl.user_changed_inputs.add(input_widget.id)
-
-        # Change the state of the topics table
-        self.activate_deactivate_topics_table()
-
-    def activate_deactivate_topics_table(self) -> None:
-        """
-        Activates or deactivates the topics table based on the number of
-        user changed inputs.
-
-        If there are any user changed inputs, the topics table is
-        deactivated (disabled). Otherwise, it is activated (enabled).
-        This is used to prevent the user from selecting a different topic
-        while there are unsaved changes in the current topic.
-        """
-        if len(self.topics_controller.user_changed_inputs) > 0:
-            self.main_tabs.topics_tab.topics_table.disabled = True
-        else:
-            self.main_tabs.topics_tab.topics_table.disabled = False
 
     # Debugging
     # def action_app_get_focus(self) -> None:
@@ -631,7 +473,7 @@ class TuidoApp(App):
 
         # Re-enable the topics table which was disabled when the user changed an
         # input to prevent switching topics while there are unsaved changes
-        self.main_tabs.topics_tab.topics_table.disabled = False
+        self.main_view.topics_tab.topics_table.disabled = False
         self.notify('Topic updated!')
 
     @work
@@ -695,77 +537,179 @@ class TuidoApp(App):
         textarea.remove_class('hidden')
         markdown.remove_class('hidden')
 
-    def action_app_toggle_dark(self) -> None:
+
+
+    async def on_data_table_row_highlighted(
+        self, event: DataTable.RowHighlighted
+    ) -> None:
         """
-        Toggles dark mode.
+        Is triggered when a row in the DataTable is highlighted.
+        This method updates the input fields with the values from the
+        selected row.
+
+        Args:
+            event: The event containing information about the
+            highlighted row.
         """
-        self.theme = (
-            'textual-dark' if self.theme == 'textual-light' else 'textual-light'
+        self.topics_controller.update_input_fields(
+            lambda id: self.query_one(id)
         )
 
-    def action_app_previous_tab(self) -> None:
-        """
-        Selects the previous tab.
-        """
-        tabs = self.query_one('#main_tabs', expect_type=Tabs)
-        tabs.action_previous_tab()
+        # Disable startup state after first selection
+        # This is necessary to prevent the input fields from being
+        # marked as changed when the app starts
+        # and the topics table is initialized
+        self.topics_controller.app_startup = False
 
-    def action_app_next_tab(self) -> None:
+    def on_input_changed(self, event: Input.Changed) -> None:
         """
-        Selects the next tab.
+        Is triggered when the value of an Input is changed.
+        If the input field is changed programmatically, it will be ignored.
+        Otherwise, `self.compare_input_value_to_original` is called.
+
+        Args:
+            event: The event containing information about the changed input.
         """
-        tabs = self.query_one('#main_tabs', expect_type=Tabs)
-        tabs.action_next_tab()
-
-    def action_app_copy_selection_to_clipboard(self) -> None:
-        """
-        Copies the selected text from the currently focused input widget to
-        the clipboard.
-        """
-        focused_widget: Widget | None = self.focused
-
-        if hasattr(focused_widget, 'selected_text'):
-            self.copy_to_clipboard(focused_widget.selected_text)  # type: ignore
-
-        self.notify('Selection copied to clipboard!')
-
-    def action_app_copy_widget_value_to_clipboard(self) -> None:
-        """
-        Copies value of the currently focused input widget to the clipboard.
-        """
-        focused_widget = self.focused
-
-        # if isinstance(focused_widget, (Input, TextArea)):
-        if hasattr(focused_widget, 'value'):
-            self.copy_to_clipboard(focused_widget.value)  # type: ignore
-
-            self.notify('Value copied to clipboard!')
-
-    def action_app_paste_from_clipboard(self) -> None:
-        """
-        Pastes the text from the clipboard to the currently focused input
-        widget at cursor position.
-        """
-        # Check if a widget is focused
-        focused_widget: Widget | None = self.focused
-
-        if not focused_widget:
-            self.notify('No widget focused.', severity='warning')
+        input_name = event.input.id
+        if input_name in self.topics_controller.programmatically_changed_inputs:
+            self.topics_controller.programmatically_changed_inputs \
+                .remove(input_name)
             return
 
-        # Check if clipboard is empty
-        clipboard_text = self.clipboard
-        if not clipboard_text:
-            self.notify('Clipboard is empty.', severity='warning')
+        self.compare_input_value_to_original(event)
+
+    def on_text_area_changed(self, event: TextArea.Changed) -> None:
+        """
+        Is triggered when the value of a TextArea is changed.
+        If the input field is changed programmatically, it will be ignored.
+        Otherwise, `self.compare_input_value_to_original` is called.
+
+        Args:
+            event: The event containing information about the changed input.
+        """
+        input_name = event.text_area.id
+
+        # logging.info(f'input_name: {input_name}')
+
+        # # TODO: Prüfen, ob topics_.... oder notes....
+
+        if input_name in self.topics_controller.programmatically_changed_inputs:
+            self.topics_controller.programmatically_changed_inputs.remove(
+                input_name
+            )
             return
 
-        # Paste into Input/TextArea
-        if isinstance(focused_widget, Input):
-            self._paste_into_input(focused_widget, clipboard_text)
-        elif isinstance(focused_widget, TextArea):
-            self._paste_into_textarea(focused_widget, clipboard_text)
+        self.compare_input_value_to_original(event)
+
+    # def on_tasks_input_popup_submit(self, message: TasksInputPopup.Submit) \
+    # -> None:
+    #     self.tasks_controller.save_task(message)
+
+    def on_task_edit_screen_submit(self, message: TaskEditScreen.Submit) \
+    -> None:
+        logging.info(f'on_tasks_tab_edit_screen_submit: {message}')
+        self.tasks_controller.save_task(message)
+
+    def on_select_changed(self, event: Select.Changed) -> None:
+        """
+        Is triggered when the value of a Select is changed.
+        If the input field is changed programmatically, it will be ignored.
+        Otherwise, `self.compare_input_value_to_original` is called.
+
+        Args:
+            event: The event containing information about the changed select.
+        """
+        input_name = event.select.id
+        if input_name in self.topics_controller.programmatically_changed_inputs:
+            self.topics_controller.programmatically_changed_inputs \
+                .remove(input_name)
+            return
+
+        self.compare_input_value_to_original(event)
+
+    def compare_input_value_to_original(
+        self, event: Input.Changed | TextArea.Changed | Select.Changed
+    ) -> None:
+        """
+        Compares the current value of the input field to the original value
+        from the model. If the values are different, the input field is
+        marked as changed and the topics table is deactivated. If the
+        values are the same, the input field is marked as unchanged and
+        the topics table is activated.
+
+        Args:
+            event: The event containing information about the changed input.
+        """
+        # TODO: Cleanup/extract code to separate methods
+
+        input_widget: Input | TextArea | Select
+
+        # Get the input widget that triggered the event and the value of it
+        if isinstance(event, Input.Changed):
+            input_widget = event.input
+            current_value = input_widget.value
+        elif isinstance(event, TextArea.Changed):
+            input_widget = event.text_area
+            current_value = input_widget.text
+        elif isinstance(event, Select.Changed):
+            input_widget = event.select
+            current_value = input_widget.value
         else:
-            self.notify('Focused widget does not support pasting text.', severity='warning')
+            return
+
+        # Ignore events from tabs other than "Topics"
+        if input_widget.id is None or not input_widget.id.startswith('topics_'):
+            return
+
+        if current_value == Select.BLANK:
+            current_value = ''
+
+        # Get original value from the model
+        topics_ctrl = self.topics_controller
+        topic_id = self.main_view.topics_tab.topics_table.get_current_id()
+        field_name = input_widget.id.replace('topics_', '') \
+                                    .replace('_input', '')
+
+        if field_name in topics_ctrl.topics_model.topics_by_id[topic_id].keys():
+            original_value = topics_ctrl.topics_model \
+                             .topics_by_id[topic_id][field_name]
+        else:
+            original_value = ''
+
+        # Debugging
+        # logging.info(
+        #     f'compare_input_value_to_original: {input_widget.id} ' +
+        #     f'current_value: {current_value}, ' +
+        #     f'original_value: {original_value}')
+
+        # Compare current value to original value
+        if current_value == original_value:
+            input_widget.remove_class('changed-input')
+
+            if input_widget.id in topics_ctrl.user_changed_inputs:
+                topics_ctrl.user_changed_inputs.remove(input_widget.id)
+        else:
+            input_widget.add_class('changed-input')
+            topics_ctrl.user_changed_inputs.add(input_widget.id)
+
+        # Change the state of the topics table
+        self.activate_deactivate_topics_table()
+
+    def activate_deactivate_topics_table(self) -> None:
+        """
+        Activates or deactivates the topics table based on the number of
+        user changed inputs.
+
+        If there are any user changed inputs, the topics table is
+        deactivated (disabled). Otherwise, it is activated (enabled).
+        This is used to prevent the user from selecting a different topic
+        while there are unsaved changes in the current topic.
+        """
+        if len(self.topics_controller.user_changed_inputs) > 0:
+            self.main_view.topics_tab.topics_table.disabled = True
+        else:
+            self.main_view.topics_tab.topics_table.disabled = False
+
 
     def _paste_into_input(self, input: Input, text: str) \
     -> None:

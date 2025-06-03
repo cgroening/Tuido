@@ -20,7 +20,7 @@ class MainTabs(Container):
         notes_tab: The notes tab widget.
     """
     tuido_app: App
-    current_tab = reactive('topics', bindings=True)
+    current_tab_name = reactive('topics', bindings=True)
     topics_tab: TopicsTab
     tasks_tab: TasksTab
     notes_tab: NotesTab
@@ -79,4 +79,4 @@ class MainTabs(Container):
             # Show the selected tab and update reactive variable
             tab_to_show = f'#{event.tab.id}-tab'
             self.query_one(tab_to_show).remove_class('hidden')
-            self.current_tab = event.tab.id
+            self.current_tab_name = event.tab.id

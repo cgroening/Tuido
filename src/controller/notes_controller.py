@@ -10,7 +10,7 @@ from pylightlib.msc.Singleton import Singleton  # type: ignore
 
 from model.config_model import Config  # type: ignore
 from model.notes_model import Notes    # type: ignore
-from view.main_tabs import MainTabs  # type: ignore
+from view.main_view import MainTabs  # type: ignore
 
 
 class NotesController(metaclass=Singleton):

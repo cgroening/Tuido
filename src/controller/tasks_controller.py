@@ -9,7 +9,7 @@ from textual.widgets import ListView
 
 from model.config_model import Config  # type: ignore
 from model.tasks_model import Task, Tasks    # type: ignore
-from view.main_tabs import MainTabs  # type: ignore
+from view.main_view import MainTabs  # type: ignore
 from view.tasks_tab_edit_screen import TaskEditScreen  # type: ignore
 
 

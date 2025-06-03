@@ -1,0 +1,81 @@
+#_global:
+
+_global_always:
+  - key: q
+    action: previous_tab
+    description: Tab ←
+    tooltip: Select the previous tab
+    show: false
+  - key: w
+    action: next_tab
+    description: Tab →
+    tooltip: Select the next tab
+    show: false
+  - key: d
+    action: toggle_dark
+    description: Lights
+    tooltip: Toggle between dark and light mode
+    show: false
+  - key: strl+q
+    action: quit
+    description: Quit
+    tooltip: Quit the app
+    show: false
+
+tasks:
+  - key: f1
+    action: new
+    description: New
+    tooltip: Create a new task
+  - key: f2
+    action: edit
+    description: Edit
+    tooltip: Edit the currently selected task
+  - key: f3
+    action: left
+    description: Left
+    tooltip: Move the currently selected task left
+  - key: f4
+    action: right
+    description: Right
+    tooltip: Move the currently selected task right
+  - key: f8
+    action: delete
+    description: Delete
+    tooltip: Delete the currently selected task
+
+topics:
+  - key: f1
+    action: new
+    description: New
+    tooltip: Create a new topic
+  - key: f2
+    action: focus_table
+    description: Table
+    tooltip: Focus the topic list
+  - key: f5
+    action: save
+    description: Save
+    tooltip: XXSave the currently selected topicX
+  - key: f7
+    action: discard
+    description: Discard
+    tooltip: Discard the changes made on the current topic
+  - key: f8
+    action: delete
+    description: Del
+    tooltip: Delete the currently selected topic
+
+notes:
+  - key: f2
+    action: show_textarea
+    description: Text
+    tooltip: Show the textarea
+  - key: f3
+    action: show_md
+    description: Markdown
+    tooltip: Show the rendered markdown
+  - key: f4
+    action: show_textarea_and_md
+    description: Text+Md
+    tooltip: Show the textarea and the rendered markdown
