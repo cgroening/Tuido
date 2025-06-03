@@ -3,10 +3,9 @@ import logging
 
 from textual import events, work
 from textual.app import App, ComposeResult
-from textual.binding import Binding
 from textual.reactive import reactive
-from textual.widget import Widget
-from textual.widgets import Footer, Header, Tabs, DataTable, Input, Select, TextArea, Markdown
+from textual.widgets import Footer, Header, Tabs, DataTable, Input, Select, \
+                            TextArea, Markdown
 
 from pylightlib.txtl import CustomBindings
 from pylightlib.txtl.QuestionScreen import QuestionScreen
@@ -18,7 +17,8 @@ from model.topics_model import Topic
 from view.main_view import MainTabs
 from view.tasks_tab_edit_screen import TaskEditScreen
 from controller.topics_controller import TopicsController
-from controller.tasks_controller import TasksController, TaskAction, TaskMoveDirection
+from controller.tasks_controller import TasksController, TaskAction, \
+                                        TaskMoveDirection
 from controller.notes_controller import NotesController
 
 
@@ -176,7 +176,9 @@ class TuidoApp(App):
                 current context but is to be displayed as disabled.
         """
         return CUSTOM_BINDINGS.handle_check_action(
-            action, parameters, active_group=str(self.main_view.current_tab_name),
+            action=action,
+            parameters=parameters,
+            active_group=str(self.main_view.current_tab_name),
             show_global_keys=bool(self.escape_pressed_twice)
         )
 
@@ -214,8 +216,6 @@ class TuidoApp(App):
         tabs = self.query_one('#main_tabs', expect_type=Tabs)
         tabs.action_next_tab()
 
-
-
     # Debugging
     # def action_app_get_focus(self) -> None:
     #     focused_widget = self.focused  # TODO: or self.screen.focused ?
@@ -225,6 +225,7 @@ class TuidoApp(App):
     #     else:
     #         # logging.info('No widget focused')
     #         self.notify('No widget focused')
+
     def action_shortcut_test(self) -> None:
         self.notify('The shortcut was triggered!')
 
@@ -266,50 +267,6 @@ class TuidoApp(App):
             self.notify('Task deleted!')
         else:
             self.notify('Deletion canceled.', severity='warning')
-
-    # def action_tasks_popup_edit_cancel(self) -> None:
-    #     """
-    #     Closes the task form popup without saving changes.
-    #     """
-    #     self.main_tabs.tasks_tab.input_form.clear_and_hide()
-
-    # def action_tasks_popup_edit_save(self) -> None:
-    #     """
-    #     Saves the changes made in the task form popup and closes it.
-    #     """
-    #     self.main_tabs.tasks_tab.input_form.submit_changes()
-
-    # def action_tasks_popup_edit_decrease_start_date(self) -> None:
-    #     """
-    #     Decreases the start date of the task by 1 day.
-    #     """
-    #     self.main_tabs.tasks_tab.input_form.adjust_date(
-    #         DateName.START_DATE, DateAdjustment.DECREASE
-    #     )
-
-    # def action_tasks_popup_edit_increase_start_date(self) -> None:
-    #     """
-    #     Decreases the start date of the task by 1 day.
-    #     """
-    #     self.main_tabs.tasks_tab.input_form.adjust_date(
-    #         DateName.START_DATE, DateAdjustment.INCREASE
-    #     )
-
-    # def action_tasks_popup_edit_decrease_end_date(self) -> None:
-    #     """
-    #     Decreases the start date of the task by 1 day.
-    #     """
-    #     self.main_tabs.tasks_tab.input_form.adjust_date(
-    #         DateName.END_DATE, DateAdjustment.DECREASE
-    #     )
-
-    # def action_tasks_popup_edit_increase_end_date(self) -> None:
-    #     """
-    #     Decreases the start date of the task by 1 day.
-    #     """
-    #     self.main_tabs.tasks_tab.input_form.adjust_date(
-    #         DateName.END_DATE, DateAdjustment.INCREASE
-    #     )
 
     def action_topics_new(self) -> None:
         """
