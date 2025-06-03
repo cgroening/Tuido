@@ -97,7 +97,8 @@ class TasksController:
         if focused_list_view_name is None:
             selected_task_index = None
         if focused_list_view_name in tasks_tab.list_views:
-            selected_task_index = tasks_tab.list_views[focused_list_view_name].index  # type: ignore
+            selected_task_index = tasks_tab.list_views[focused_list_view_name] \
+                                      .index  # type: ignore
         if selected_task_index is None and task_action == TaskAction.EDIT:
             return
 
