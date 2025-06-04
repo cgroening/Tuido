@@ -32,6 +32,8 @@ class NotesTab(Static):
         super().__init__(**kwargs)
         self.textarea = TextArea(id='notes_textarea', classes="notes-textarea",
                                  show_line_numbers=True)
+        self.textarea.indent_type = 'spaces'
+        self.textarea.indent_width = 4
         self.markdown = Markdown(id='notes_markdown', classes="notes-markdown")
 
     def compose(self) -> ComposeResult:
