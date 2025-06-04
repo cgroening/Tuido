@@ -149,7 +149,7 @@ class TuidoApp(App):
         Args:
             event: The key press event.
         """
-        # self.notify(f'Key pressed: {event.key}')
+        self.notify(f'Key pressed: {event.key}')
         if event.key == 'escape':
             if event.time - self.last_escape_key < 0.5:
                 self.escape_pressed_twice = not self.escape_pressed_twice
@@ -561,7 +561,3 @@ class TuidoApp(App):
         textarea.insert(text, cursor_pos)
         textarea.cursor_location = (cursor_pos[0], cursor_pos[1]+len(text))
         self.notify('Text pasted into text area!')
-
-    # Debugging
-    # async def on_key(self, event: events.Key) -> None:
-    #     self.notify(f"Key pressed: {event.key}")
