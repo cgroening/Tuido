@@ -7,6 +7,8 @@ from textual.app import ComposeResult
 from textual.containers import Grid
 from textual.widgets import Static, TextArea, Markdown
 
+from textual_textarea import TextEditor
+
 
 class NotesTab(Static):
     """
@@ -37,6 +39,8 @@ class NotesTab(Static):
         Adds the TextArea and Markdown widgets to the Notes tab.
         """
         with Grid():
+            # yield TextEditor(text='', theme='nord-darker', id='ta')
+            # yield TextEditor(text='', id='ta')
             yield self.textarea
             yield self.markdown
 
