@@ -177,7 +177,7 @@ class TaskEditScreen(ModalScreen):
     @work
     async def action_close_modal(self) -> None:
         """
-        Closes the modal popup without saving changes. Aks the user to confirm
+        Closes the modal popup without saving changes. Asks the user to confirm
         if there are unsaved changes.
         """
         discard = await self.discard_unsaved_changes()
