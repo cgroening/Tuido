@@ -155,6 +155,7 @@ class TuidoApp(App):
         #         self.escape_pressed_twice = not self.escape_pressed_twice
 
         #     self.last_escape_key = event.time
+
         pass
 
     def check_action(self, action: str, parameters: tuple[object, ...]) \
