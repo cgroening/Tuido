@@ -6,10 +6,13 @@ from textual.widgets import Static, DataTable, Input, Label, Select, TextArea
 from textual.widgets._data_table import ColumnKey, Column
 from rich.text import Text  # type: ignore # noqa
 
+from pylightlib.txtl.CustomDataTable import CustomDataTable
+
 from model.config_model import Config, FieldDefinition  # type: ignore
 
 
-class TopicsDataTable(DataTable):
+# class TopicsDataTable(DataTable):
+class TopicsDataTable(CustomDataTable):
     """
     DataTable for topics.
 
@@ -17,7 +20,7 @@ class TopicsDataTable(DataTable):
         flexible_columns: List of column keys that should be flexible in width
             (will be adjusted according to window width).
     """
-    flexible_columns: list[ColumnKey] = []
+    # flexible_columns: list[ColumnKey] = []
 
     def __init__(self, **kwargs):
         """
@@ -27,55 +30,80 @@ class TopicsDataTable(DataTable):
         self.id = 'topics_table'
         self.cursor_type = 'row'
 
-    def on_resize(self) -> None:
-        """
-        Handles the resize event of the DataTable.
+    # def on_resize(self) -> None:
+    #     """
+    #     Handles the resize event of the DataTable.
 
-        Adjusts the widths of the flexible columns based on the new size of
-        the table.
-        """
-        table_width = self.size.width - 10
-        fixed_widths = self.get_fixed_column_widths()
-        self.adjust_flexible_columns(table_width, fixed_widths)
-        self.refresh()
+    #     Adjusts the widths of the flexible columns based on the new size of
+    #     the table.
+    #     """
+    #     table_width = self.size.width - 10
+    #     fixed_widths = self.get_fixed_column_widths()
+    #     self.adjust_flexible_columns(table_width, fixed_widths)
+    #     self.refresh()
 
-    def get_fixed_column_widths(self) -> int:
-        """
-        Returns the total width of all fixed-width columns in the table.
+    # def get_fixed_column_widths(self) -> int:
+    #     """
+    #     Returns the total width of all fixed-width columns in the table.
 
-        This is used to calculate the available width for flexible columns.
+    #     This is used to calculate the available width for flexible columns.
 
-        Returns:
-            The total width of all fixed-width columns.
-        """
-        fixed_widths = 0
+    #     Returns:
+    #         The total width of all fixed-width columns.
+    #     """
+    #     fixed_widths = 0
 
-        for column_key in self.columns:
-            column: Column = self.columns[column_key]
+    #     for column_key in self.columns:
+    #         column: Column = self.columns[column_key]
 
-            if column_key not in self.flexible_columns:
-                fixed_widths += column.width
+    #         if column_key not in self.flexible_columns:
+    #             fixed_widths += column.width
 
-        return fixed_widths
+    #     return fixed_widths
 
-    def adjust_flexible_columns(self, table_width: int, fixed_width: int) \
-    -> None:
-        """
-        Adjusts the widths of the flexible columns based on the available
-        width in the table.
+    # def adjust_flexible_columns(self, table_width: int, fixed_width: int) \
+    # -> None:
+    #     """
+    #     Adjusts the widths of the flexible columns based on the available
+    #     width in the table.
 
-        Args:
-            table_width: The total width of the table.
-            fixed_width: The total width of all fixed-width columns.
-        """
-        for column_key in self.columns:
-            column: Column = self.columns[column_key]
+    #     Args:
+    #         table_width: The total width of the table.
+    #         fixed_width: The total width of all fixed-width columns.
+    #     """
+    #     for column_key in self.columns:
+    #         column: Column = self.columns[column_key]
 
-            if column_key in self.flexible_columns:
-                column.auto_width = False
-                column.width = int(
-                    (table_width - fixed_width) / len(self.flexible_columns)
-                )
+    #         if column_key in self.flexible_columns:
+    #             column.auto_width = False
+    #             column.width = int(
+    #                 (table_width - fixed_width) / len(self.flexible_columns)
+    #             )
+
+    # def select_first_row(self) -> None:
+    #     """
+    #     Selects the first row in the table and posts a RowHighlighted event.
+    #     """
+    #     if self.row_count == 0:
+    #         return
+
+    #     # Set cursor to first row
+    #     self.cursor_coordinate = (0, 0)
+    #     self.move_cursor(row=0, column=0)  # Same as above, just to be sure
+
+    #     # Manually post RowHighlighted event
+    #     row_key, _ = self.coordinate_to_cell_key(self.cursor_coordinate)
+    #     self.post_message(
+    #         DataTable.RowHighlighted(self, self.cursor_row, row_key)
+    #     )
+
+    # def delete_selected_row(self) -> None:
+    #     """
+    #     Deletes the currently selected row from the table.
+    #     """
+    #     if self.cursor_row is not None:
+    #         row_key, _ = self.coordinate_to_cell_key(self.cursor_coordinate)
+    #         self.remove_row(row_key)
 
     def get_current_id(self) -> int:
         """
@@ -86,31 +114,6 @@ class TopicsDataTable(DataTable):
         """
         selected_row = self.get_row_at(self.cursor_row)
         return int(selected_row[0].plain.strip())
-
-    def select_first_row(self) -> None:
-        """
-        Selects the first row in the table.
-        """
-        if self.row_count == 0:
-            return
-
-        # Set cursor to first row
-        self.cursor_coordinate = (0, 0)
-        self.move_cursor(row=0, column=0)  # Same as above, just to be sure
-
-        # Manually post RowHighlighted event to clear input fields
-        row_key, _ = self.coordinate_to_cell_key(self.cursor_coordinate)
-        self.post_message(
-            DataTable.RowHighlighted(self, self.cursor_row, row_key)
-        )
-
-    def delete_selected_row(self) -> None:
-        """
-        Deletes the currently selected row from the table.
-        """
-        if self.cursor_row is not None:
-            row_key, _ = self.coordinate_to_cell_key(self.cursor_coordinate)
-            self.remove_row(row_key)
 
 
 class TopicFormWidgets(VerticalGroup):
