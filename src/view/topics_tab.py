@@ -87,6 +87,23 @@ class TopicsDataTable(DataTable):
         selected_row = self.get_row_at(self.cursor_row)
         return int(selected_row[0].plain.strip())
 
+    def select_first_row(self) -> None:
+        """
+        Selects the first row in the table.
+        """
+        if self.row_count == 0:
+            return
+
+        # Set cursor to first row
+        self.cursor_coordinate = (0, 0)
+        self.move_cursor(row=0, column=0)  # Same as above, just to be sure
+
+        # Manually post RowHighlighted event to clear input fields
+        row_key, _ = self.coordinate_to_cell_key(self.cursor_coordinate)
+        self.post_message(
+            DataTable.RowHighlighted(self, self.cursor_row, row_key)
+        )
+
     def delete_selected_row(self) -> None:
         """
         Deletes the currently selected row from the table.
@@ -94,6 +111,7 @@ class TopicsDataTable(DataTable):
         if self.cursor_row is not None:
             row_key, _ = self.coordinate_to_cell_key(self.cursor_coordinate)
             self.remove_row(row_key)
+
 
 class TopicFormWidgets(VerticalGroup):
     """

@@ -225,8 +225,12 @@ class TopicsController(metaclass=Singleton):
             new_topic[col.name] = ''
 
         new_topic = self.apply_field_function(new_topic, TopicAction.NEW)
-
         self.topics_model.create_new_topic(new_topic)
+
+        # Select the new row in the table and clear input fields
+        table.select_first_row()
+        # self.clear_input_fields()
+
         logging.info(f'New topic created with ID {new_id}.')
 
     def save_topic(self, input_query_func: Callable) -> None:

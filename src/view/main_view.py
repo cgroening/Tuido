@@ -15,12 +15,14 @@ class MainTabs(Container):
     Attributes:
         tudio_app: The main application instance.
         current_tab: The currently selected tab.
+        tabs: The Tabs widget.
         topics_tab: The topics tab widget.
         tasks_tab: The tasks tab widget.
         notes_tab: The notes tab widget.
     """
     tuido_app: App
     current_tab_name = reactive('topics', bindings=True)
+    tabs: Tabs
     topics_tab: TopicsTab
     tasks_tab: TasksTab
     notes_tab: NotesTab
@@ -45,14 +47,14 @@ class MainTabs(Container):
         Creates the child widgets.
         """
         # Tab labels
-        tabs = Tabs(
+        self.tabs = Tabs(
             Tab('Tasks', id='tasks'),
             Tab('Topics', id='topics'),
             Tab('Notes', id='notes'),
             id='main_tabs',
         )
-        tabs.can_focus = False
-        yield tabs
+        self.tabs.can_focus = False
+        yield self.tabs
 
         # Pre-create all tab contents, but only the current one will be visible
         # yield TopicsTab(id="topics-tab")

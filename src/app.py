@@ -137,6 +137,7 @@ class TuidoApp(App):
         Gets called after mounting.
         """
         # self.topics_controller.app_startup = False
+        # self.main_view.tabs.active = self.main_view.current_tab_name
         pass
 
     async def on_key(self, event: events.Key) -> None:
@@ -307,6 +308,7 @@ class TuidoApp(App):
         # Re-enable the topics table which was disabled when the user changed an
         # input to prevent switching topics while there are unsaved changes
         self.main_view.topics_tab.topics_table.disabled = False
+        self.topics_controller.user_changed_inputs.clear()
         self.notify('Topic updated!')
 
     @work
@@ -516,6 +518,7 @@ class TuidoApp(App):
         #     f'original_value: {original_value}')
 
         # Compare current value to original value
+
         if current_value == original_value:
             input_widget.remove_class('changed-input')
 
