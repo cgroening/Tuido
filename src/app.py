@@ -172,6 +172,8 @@ class TuidoApp(App):
         Args:
             action: The action to check.
             parameters: Parameters for the action.
+            active_group: The currently active group (tab) name.
+            show_global_keys: Flag indicating whether to show global keys.
 
         Returns:
             bool | None: True if the corresponding key of the action is to be
