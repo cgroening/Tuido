@@ -169,6 +169,8 @@ class Tasks(metaclass=Singleton):
         task = self.create_task_object_from_raw_data(
             column_name, task_dict
         )
+        if column_name not in self.tasks or len(self.tasks[column_name]) == 0:
+            self.tasks[column_name] = []
         self.tasks[column_name].append(task)
 
         # Sort the tasks for the column_name by priority
