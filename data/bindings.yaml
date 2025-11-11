@@ -56,11 +56,11 @@ tasks:
     tooltip: Edit the currently selected task
   - key: y
     action: left
-    description: Left
+    description: Move left
     tooltip: Move the currently selected task left
   - key: x
     action: right
-    description: Right
+    description: Move right
     tooltip: Move the currently selected task right
   - key: r
     action: delete
