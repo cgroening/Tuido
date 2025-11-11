@@ -189,8 +189,8 @@ class TaskEditScreen(ModalScreen):
         """
         Saves the changes made in the popup and closes it.
         """
-        self.submit_changes()
         self.app.pop_screen()
+        self.submit_changes()
 
     def action_set_end_date_to_start_date(self) -> None:
         """

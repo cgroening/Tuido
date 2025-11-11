@@ -164,51 +164,7 @@ class TasksController:
         self.store_index_of_new_task(column_name, task)
 
         # Delayed (re)selection of the new or edited task so UI is fully updated
-        # asyncio.get_event_loop().call_soon(self.reselect_list_view_item)
-        # self.tuido_app.call_later(self.reselect_list_view_item)
-
-
-
-        asyncio.get_event_loop().call_soon(
-            lambda: self.reselect_list_view_item(column_name)
-        )
-
-        self.tuido_app.call_later(
-            lambda: self.reselect_list_view_item(column_name)
-        )
-
-
-
-        # oder mit explizitem Delay:
-        # self.tuido_app.set_timer(0.1, self.reselect_list_view_item)
-
-
-
-        # Warte auf das nächste Paint/Mount Event
-        # await self.tuido_app.workers.wait_for_complete()
-        # # oder
-        # await asyncio.sleep(0)  # Gibt anderen Tasks die Chance zu laufen
-        # await asyncio.sleep(0)  # Zweimal, um sicherzustellen
-        # self.reselect_list_view_item()
-
-
-
-        # Warte kurz, bis UI aktualisiert ist
-        # await asyncio.sleep(0.05)  # 50ms sollten ausreichen
-        # self.reselect_list_view_item()
-
-
-
-        # asyncio.get_event_loop().call_later(1.0, self.reselect_list_view_item)
-
-        # Multi-Step Refresh
-        # def delayed_reselect():
-        #     list_view = self.main_tabs.tasks_tab.list_views[column_name]
-        #     list_view.refresh(layout=True)
-        #     self.tuido_app.refresh()
-        #     self.reselect_list_view_item()
-
-        # self.tuido_app.call_later(delayed_reselect)
+        asyncio.get_event_loop().call_soon(self.reselect_list_view_item)
 
     def store_index_of_new_task(
         self, column_name: str, new_task: Task
@@ -250,29 +206,27 @@ class TasksController:
             list_view.append(list_item)
         tasks_tab.set_can_focus()
 
-    def reselect_list_view_item(self, list_view_name: str) -> None:
+    def reselect_list_view_item(self) -> None:
         """
         Re-selects the item in the list view that was selected before the popup
         was shown or the item that was just created.
-
-        Args:
-            column_name: The name of the column to reselect the item in.
         """
         config: Config = Config.instance                    # type: ignore
         tasks_controller = self.tuido_app.tasks_controller  # type: ignore
-        # tasks_tab = self.tuido_app.main_tabs.tasks_tab      # type: ignore
-        tasks_tab = self.tuido_app.query_one('#tasks-tab')
+        tasks_tab = self.tuido_app.main_tabs.tasks_tab      # type: ignore
 
-        # list_view_name = tasks_tab.selected_column_name
+        list_view_name = tasks_tab.selected_column_name
         task_index = tasks_controller.index_of_new_task
-
-        logging.info(
-            f"Reselecting task at index {task_index} "
-            f"in list view '{list_view_name}'"
-        )
 
         # Get the list view instance and set its state to enabled
         list_view = tasks_tab.list_views[list_view_name]
+
+        # Workaround to trigger the on_focus event of the list view
+        # This is necessary to ensure the list view is focused correctly
+        list_view.can_focus = False
+        list_view.disabled = True
+        list_view.can_focus = True
+        list_view.disabled = False
 
         # Set the selected index and focus the list view
         self.focus_listview(list_view, task_index)
@@ -285,18 +239,9 @@ class TasksController:
             list_view: The list view to be focused.
             selected_index: The index of the item to be selected.
         """
-        # Workaround to trigger the on_focus event of the list view
-        # This is necessary to ensure the list view is focused correctly
-        list_view.can_focus = False
-        list_view.disabled = True
-        list_view.can_focus = True
-        list_view.disabled = False
-
-        # Set the selected index and focus the list view
         list_view.index = selected_index
         list_view.focus()
         list_view.refresh()
-        # list_view.refresh()
 
     def move_task(self, move_direction: TaskMoveDirection) -> None:
         """

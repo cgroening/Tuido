@@ -50,7 +50,7 @@ tasks:
     action: new
     description: New
     tooltip: Create a new task
-  - key: m
+  - key: e
     action: edit
     description: Edit
     tooltip: Edit the currently selected task
@@ -62,7 +62,7 @@ tasks:
     action: right
     description: Right
     tooltip: Move the currently selected task right
-  - key: d
+  - key: r
     action: delete
     description: Delete
     tooltip: Delete the currently selected task
