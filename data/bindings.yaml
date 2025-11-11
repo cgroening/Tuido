@@ -22,24 +22,47 @@ _global_always:
     tooltip: Quit the app
     show: false
 
+# tasks:
+#   - key: f1
+#     action: new
+#     description: New
+#     tooltip: Create a new task
+#   - key: f2
+#     action: edit
+#     description: Edit
+#     tooltip: Edit the currently selected task
+#   - key: f3
+#     action: left
+#     description: Left
+#     tooltip: Move the currently selected task left
+#   - key: f4
+#     action: right
+#     description: Right
+#     tooltip: Move the currently selected task right
+#   - key: f8
+#     action: delete
+#     description: Delete
+#     tooltip: Delete the currently selected task
+
+# Try new set of keybindings
 tasks:
-  - key: f1
+  - key: n
     action: new
     description: New
     tooltip: Create a new task
-  - key: f2
+  - key: m
     action: edit
     description: Edit
     tooltip: Edit the currently selected task
-  - key: f3
+  - key: y
     action: left
     description: Left
     tooltip: Move the currently selected task left
-  - key: f4
+  - key: x
     action: right
     description: Right
     tooltip: Move the currently selected task right
-  - key: f8
+  - key: d
     action: delete
     description: Delete
     tooltip: Delete the currently selected task
