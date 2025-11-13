@@ -166,11 +166,6 @@ class TasksController:
         self.store_index_of_new_task(column_name, task)
 
         # Delayed (re)selection of the new or edited task so UI is fully updated
-        # asyncio.get_event_loop().call_soon(self.reselect_list_view_item)
-        # self.tuido_app.call_later(self.reselect_list_view_item)
-
-
-
         asyncio.get_event_loop().call_soon(
             lambda: self.reselect_list_view_item(column_name)
         )
@@ -178,39 +173,6 @@ class TasksController:
         self.tuido_app.call_later(
             lambda: self.reselect_list_view_item(column_name)
         )
-
-
-
-        # oder mit explizitem Delay:
-        # self.tuido_app.set_timer(0.1, self.reselect_list_view_item)
-
-
-
-        # Warte auf das nächste Paint/Mount Event
-        # await self.tuido_app.workers.wait_for_complete()
-        # # oder
-        # await asyncio.sleep(0)  # Gibt anderen Tasks die Chance zu laufen
-        # await asyncio.sleep(0)  # Zweimal, um sicherzustellen
-        # self.reselect_list_view_item()
-
-
-
-        # Warte kurz, bis UI aktualisiert ist
-        # await asyncio.sleep(0.05)  # 50ms sollten ausreichen
-        # self.reselect_list_view_item()
-
-
-
-        # asyncio.get_event_loop().call_later(1.0, self.reselect_list_view_item)
-
-        # Multi-Step Refresh
-        # def delayed_reselect():
-        #     list_view = self.main_tabs.tasks_tab.list_views[column_name]
-        #     list_view.refresh(layout=True)
-        #     self.tuido_app.refresh()
-        #     self.reselect_list_view_item()
-
-        # self.tuido_app.call_later(delayed_reselect)
 
     def store_index_of_new_task(
         self, column_name: str, new_task: Task
