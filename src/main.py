@@ -259,6 +259,18 @@ class TuidoApp(App):
         """
         self.tasks_controller.move_task(TaskMoveDirection.RIGHT)
 
+    def action_tasks_select_left_column(self) -> None:
+        """
+        Moves the currently selected task to the right column.
+        """
+        self.tasks_controller.select_column(TaskMoveDirection.LEFT)
+
+    def action_tasks_select_right_column(self) -> None:
+        """
+        Moves the currently selected task to the right column.
+        """
+        self.tasks_controller.select_column(TaskMoveDirection.RIGHT)
+
     @work
     async def action_tasks_delete(self) -> None:
         """

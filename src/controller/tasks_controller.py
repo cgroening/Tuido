@@ -361,6 +361,30 @@ class TasksController:
         target_list_view.index = target_task_index
         target_list_view.focus()
 
+    def select_column(self, direction: TaskMoveDirection) -> None:
+        """
+        Selects the left or right column in the tasks tab.
+
+        Args:
+            direction: The direction to move the selection (left or right).
+
+        """
+        self.tuido_app.notify(f'Selecting column {direction.value}')
+        # tasks_tab = self.main_tabs.tasks_tab
+        # current_column_name = tasks_tab.selected_column_name
+        # column_names = self.config.task_column_names
+        # current_column_index = column_names.index(current_column_name)
+
+        # if direction == TaskMoveDirection.LEFT:
+        #     new_column_index = max(current_column_index - 1, 0)
+        # elif direction == TaskMoveDirection.RIGHT:
+        #     new_column_index = min(
+        #         current_column_index + 1, len(column_names) - 1
+        #     )
+
+        # new_column_name = column_names[new_column_index]
+        # tasks_tab.select_column(new_column_name)
+
     def delete_selected_task(self) -> None:
         """
         Deletes the selected task from the tasks model and updates the view.

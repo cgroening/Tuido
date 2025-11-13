@@ -66,6 +66,16 @@ tasks:
     action: delete
     description: Delete
     tooltip: Delete the currently selected task
+  - key: left
+    action: select_left_column
+    description: ← Col
+    tooltip: Select the left column
+    show: false
+  - key: right
+    action: select_right_column
+    description: → Col
+    tooltip: Select the right column
+    show: false
 
 topics:
   - key: f1
