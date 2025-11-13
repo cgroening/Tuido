@@ -57,10 +57,6 @@ class CustomListView(ListView):
         """
         Handles key events for the ListView.
 
-        This method is called when a key event occurs. If the key is 'up' or
-        'down', the parent container is scrolled accordingly to maintain the
-        current item in view.
-
         Args:
             event: The key event that occurred.
         """
@@ -89,7 +85,6 @@ class CustomListView(ListView):
         self.change_class(index)
         self.tasks_tab.selected_column_name = self.column_name
         self.tasks_tab.selected_task_index = index or 0
-
 
     def change_class(self, index: int) -> None:
         """
