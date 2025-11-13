@@ -1,8 +1,6 @@
 import asyncio
-import copy
 import enum
 import logging
-import time
 
 from textual.app import App
 from textual.widgets import ListView
@@ -73,6 +71,8 @@ class TasksController:
         tasks_tab.column_captions = self.tasks_model.column_captions
         tasks_tab.column_names = self.tasks_model.column_names
         tasks_tab.tasks = self.tasks_model.tasks
+
+        logging.info(f'{tasks_model.tasks}')
 
     def show_task_form(self, task_action: TaskAction) -> None:
         """
@@ -230,11 +230,6 @@ class TasksController:
         # list_view_name = tasks_tab.selected_column_name
         task_index = tasks_controller.index_of_new_task
 
-        logging.info(
-            f"Reselecting task at index {task_index} "
-            f"in list view '{list_view_name}'"
-        )
-
         # Get the list view instance and set its state to enabled
         list_view = tasks_tab.list_views[list_view_name]
 
@@ -378,19 +373,24 @@ class TasksController:
         # Selection of the tasks that jumps into the position of the deleted one
         asyncio.get_event_loop().call_soon(
             lambda: self._select_task(
-                selected_task_index, len(self.tasks_model.tasks[column_name])
+                selected_task_index,
+                len(self.tasks_model.tasks[column_name]),
+                column_name
             )
         )
 
-    def _select_task(self, task_index: int, list_length: int) -> None:
+    def _select_task(
+        self, task_index: int, list_length: int, column_name: str
+    ) -> None:
         """
         Selects a task in the specified list view.
 
         Args:
             task_index: The index of the task to select.
             list_length: The length of the list to ensure the index is valid.
+            column_name: The name of the column/list view to select the task in.
         """
         if list_length > 0:
             new_index = min(task_index, list_length - 1)
             self.index_of_new_task = new_index
-            self.reselect_list_view_item()
+            self.reselect_list_view_item(column_name)

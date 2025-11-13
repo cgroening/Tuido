@@ -1,12 +1,14 @@
 from __future__ import annotations
 import logging
 
+from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.events import Key, Focus, Blur
 from textual.widgets import Static, ListView, ListItem, Label
-
 from rich.text import Text
+
+from pylightlib.msc.Utils import Utils
 
 from model.tasks_model import Task, TaskPriority
 
@@ -53,6 +55,7 @@ class CustomListView(ListView):
         self.column_name = column_name
         self.loop_behavior = loop_behavior
 
+
     async def on_key(self, event: Key) -> None:
         """
         Handles key events for the ListView.
@@ -60,24 +63,85 @@ class CustomListView(ListView):
         Args:
             event: The key event that occurred.
         """
-        self._scroll_to_selected_item(event)
+        prev_index, new_index = self._enable_loop_behavior(event)
+        self._scroll_to_selected_item(event, prev_index, new_index)
 
-    def _scroll_to_selected_item(self, event: Key) -> None:
+    def _enable_loop_behavior(self, event: Key) -> tuple[int, int | None]:
         """
-        Scrolls the parent container to maintain the currently selected item
-        in view.
+        Enables loop behavior for the ListView when the up or down key is
+        pressed.
+
+        If the loop behavior is enabled and the user presses the up key at
+        the top of the list, the selection moves to the bottom of the list.
+        If the user presses the down key at the bottom of the list, the
+        selection moves to the top of the list.
 
         Args:
             event: The key event that occurred.
+
+        Returns:
+            A tuple containing the previous index and the new index. If no
+            loop behavior was applied, the new index is None.
+        """
+        prev_index = self.index or 0
+
+        # Abort if loop behavior is disabled or other key than up/down pressed
+        if not self.loop_behavior or event.key not in ('up', 'down'):
+            return prev_index or 0, None
+
+        # Abort if current index is not the first or last index
+        current_index = self.index or 0
+        list_bounds = (0, len(self.children) - 1)
+        if current_index not in list_bounds:
+            return prev_index or 0, None
+
+        # Determine the next index based on the key pressed
+        direction = -1 if event.key == 'up' else 1
+        new_index = Utils.next_index(
+            current_index,
+            len(self.children),
+            direction=direction,
+            loop_behavior=self.loop_behavior
+        )
+
+        # Update the index to the new index
+        self.index = new_index
+
+        # Disable further handling of this event, to ensure the correct handling
+        # of scrolling and item selection in `_scroll_to_selected_item`
+        event.stop()
+
+        return prev_index, new_index
+
+    def _scroll_to_selected_item(
+        self, event: Key, prev_index: int, index: int | None
+    ) -> None:
+        """
+        Scrolls the parent container to maintain the currently selected item
+        in view if the up or down key was pressed. Furthermore, updates the
+        class of the currently selected item and updates the selected item
+        information in the TasksTab.
+
+        Args:
+            event: The key event that occurred.
+            prev_index: The previous index of the selected item.
+            index: The new index of the selected item. If None, the current
+                   index is used.
         """
         # Get index of the currently selected item
-        index = self.index or 0
-        if event.key == 'up':
-            index = max(0, index - 1)
-        elif event.key == 'down':
-            index = min(len(self.children) - 1, index + 1)
-        else:
-            return
+        index = self.index if index is None else index
+
+        # Abort if other key than up/down pressed
+        if event.key not in ('up', 'down'):
+            return None
+
+        # Abort if current index is not the first or last index
+        list_bounds = (0, len(self.children) - 1)
+        if prev_index not in list_bounds:
+            if event.key == 'up':
+                index = max(0, index - 1)
+            elif event.key == 'down':
+                index = min(len(self.children) - 1, index + 1)
 
         # Get the item at the new index and scroll to it
         item = self.children[index]
@@ -85,6 +149,8 @@ class CustomListView(ListView):
         self.change_class(index)
         self.tasks_tab.selected_column_name = self.column_name
         self.tasks_tab.selected_task_index = index or 0
+
+        logging.info(f'Scrolling to item index: {index}')
 
     def change_class(self, index: int) -> None:
         """
@@ -134,6 +200,13 @@ class CustomListView(ListView):
         This method is called when an item in the ListView is selected with
         the cursor. It adds  the 'selected' class to the currently selected
         item and removes it from all other items.
+
+        Note:
+            Function definition equivalent to:
+            ```
+            @on(ListView.Selected)
+            def ...
+            ```
         """
         for item in self.children:
             item.remove_class('selected')
@@ -205,8 +278,9 @@ class TasksTab(Static):
                     # ListView for the column
                     vscroll = VerticalScroll(classes='task_column_vscroll')
                     with vscroll:
-                        list_view = CustomListView(vscroll, self,
-                                                   column_name, *list_items)
+                        list_view = CustomListView(
+                            vscroll, self, column_name, True, *list_items
+                        )
                         self.list_views[column_name] = list_view
                         yield list_view
 
