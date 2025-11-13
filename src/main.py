@@ -247,13 +247,13 @@ class TuidoApp(App):
         """
         self.tasks_controller.show_task_form(TaskAction.EDIT)
 
-    def action_tasks_left(self) -> None:
+    def action_tasks_move_left(self) -> None:
         """
         Moves the currently selected task to the left column.
         """
         self.tasks_controller.move_task(TaskMoveDirection.LEFT)
 
-    def action_tasks_right(self) -> None:
+    def action_tasks_move_right(self) -> None:
         """
         Moves the currently selected task to the right column.
         """

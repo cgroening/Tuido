@@ -11,7 +11,7 @@ _global_always:
     description: Tab →
     tooltip: Select the next tab
     show: false
-  - key: d
+  - key: z
     action: toggle_dark
     description: Lights
     tooltip: Toggle between dark and light mode
@@ -32,11 +32,11 @@ _global_always:
 #     description: Edit
 #     tooltip: Edit the currently selected task
 #   - key: f3
-#     action: left
+#     action: move_left
 #     description: Left
 #     tooltip: Move the currently selected task left
 #   - key: f4
-#     action: right
+#     action: move_right
 #     description: Right
 #     tooltip: Move the currently selected task right
 #   - key: f8
@@ -55,14 +55,14 @@ tasks:
     description: Edit
     tooltip: Edit the currently selected task
   - key: y
-    action: left
+    action: move_left
     description: Move left
     tooltip: Move the currently selected task left
   - key: x
-    action: right
+    action: move_right
     description: Move right
     tooltip: Move the currently selected task right
-  - key: r
+  - key: d
     action: delete
     description: Delete
     tooltip: Delete the currently selected task
