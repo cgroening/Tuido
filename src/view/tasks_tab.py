@@ -25,19 +25,24 @@ class CustomListView(ListView):
         vertical_scroll: The parent container that is scrolled.
         tasks_tab: The TasksTab object that contains the list of tasks.
         column_name: The name of the column the ListView belongs to.
+        loop_behavior: Determines if the list view should loop when reaching
+            the end.
     """
     vertical_scroll: VerticalScroll
     tasks_tab: TasksTab
     column_name: str
+    loop_behavior: bool
 
 
     def __init__(self, vertical_scroll: VerticalScroll, tasks_tab: TasksTab,
-                 column_name: str, *args, **kwargs):
+                 column_name: str, loop_behavior: bool = True, *args, **kwargs):
         """
         Initializes the CustomListView.
 
         Args:
             vscroll: The parent container that is scrolled.
+            loop_behavior: Determines if the list view should loop when
+                reaching the end.
             *args: Positional arguments for the ListView.
             **kwargs: Keyword arguments for the ListView.
         """
@@ -46,6 +51,7 @@ class CustomListView(ListView):
         self.vertical_scroll.can_focus = False
         self.tasks_tab = tasks_tab
         self.column_name = column_name
+        self.loop_behavior = loop_behavior
 
     async def on_key(self, event: Key) -> None:
         """
@@ -54,6 +60,16 @@ class CustomListView(ListView):
         This method is called when a key event occurs. If the key is 'up' or
         'down', the parent container is scrolled accordingly to maintain the
         current item in view.
+
+        Args:
+            event: The key event that occurred.
+        """
+        self._scroll_to_selected_item(event)
+
+    def _scroll_to_selected_item(self, event: Key) -> None:
+        """
+        Scrolls the parent container to maintain the currently selected item
+        in view.
 
         Args:
             event: The key event that occurred.
@@ -192,17 +208,12 @@ class TasksTab(Static):
                     yield(Label(text, classes='task_column_header'))
 
                     # ListView for the column
-                    vertical_scroll = VerticalScroll(classes='task_column_vscroll')
-                    with vertical_scroll:
-                        list_view = CustomListView(vertical_scroll, self,
+                    vscroll = VerticalScroll(classes='task_column_vscroll')
+                    with vscroll:
+                        list_view = CustomListView(vscroll, self,
                                                    column_name, *list_items)
                         self.list_views[column_name] = list_view
                         yield list_view
-
-        # self.input_form = TasksInputPopup(self.tuido_app, self.list_views,
-        #                                   id='tasks-input-popup')
-        # self.input_form.display = False
-        # yield self.input_form
 
     def create_list_items(self, column_name: str) -> list[ListItem]:
         """
