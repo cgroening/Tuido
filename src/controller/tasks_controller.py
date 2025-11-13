@@ -19,8 +19,8 @@ class TaskAction(enum.Enum):
 
 
 class TaskMoveDirection(enum.Enum):
-    LEFT = 'left'
-    RIGHT = 'right'
+    LEFT = -1
+    RIGHT = 1
 
 
 class TasksController:
@@ -361,7 +361,9 @@ class TasksController:
         target_list_view.index = target_task_index
         target_list_view.focus()
 
-    def select_column(self, direction: TaskMoveDirection) -> None:
+    def select_previous_or_next_column(
+        self, direction: TaskMoveDirection
+    ) -> None:
         """
         Selects the left or right column in the tasks tab.
 
@@ -370,20 +372,57 @@ class TasksController:
 
         """
         self.tuido_app.notify(f'Selecting column {direction.value}')
-        # tasks_tab = self.main_tabs.tasks_tab
-        # current_column_name = tasks_tab.selected_column_name
-        # column_names = self.config.task_column_names
-        # current_column_index = column_names.index(current_column_name)
 
-        # if direction == TaskMoveDirection.LEFT:
-        #     new_column_index = max(current_column_index - 1, 0)
-        # elif direction == TaskMoveDirection.RIGHT:
-        #     new_column_index = min(
-        #         current_column_index + 1, len(column_names) - 1
-        #     )
+        tasks_tab = self.main_tabs.tasks_tab
+
+
+        # Skip if all columns/ListViews in tasks_tab.list_views are empty
+        if all(len(tasks_tab.list_views[column_name].children) == 0 for column_name in tasks_tab.list_views):
+            return
+
+
+
+        current_column_name = tasks_tab.selected_column_name
+        column_names = self.config.task_column_names
+        current_column_index = column_names.index(current_column_name)
+
+
+
+
+
+
+        while True:
+            # if direction == TaskMoveDirection.LEFT:
+            #     new_column_index = max(current_column_index - 1, 0)
+            # elif direction == TaskMoveDirection.RIGHT:
+            #     new_column_index = min(
+            #         current_column_index + 1, len(column_names) - 1
+            #     )
+
+            new_column_index = (current_column_index + direction.value) % len(column_names)
+
+            new_column_name = column_names[new_column_index]
+
+            list_view: ListView = tasks_tab.list_views[new_column_name]
+
+
+
+            current_column_index += direction.value
+
+            if len(list_view.children) > 0:
+                list_view.focus()
+                break
+
+
+
+
+
+
 
         # new_column_name = column_names[new_column_index]
         # tasks_tab.select_column(new_column_name)
+
+
 
     def delete_selected_task(self) -> None:
         """
