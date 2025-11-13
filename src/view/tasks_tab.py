@@ -82,8 +82,6 @@ class CustomListView(ListView):
         Returns:
             A boolean indicating whether loop behavior was applied.
         """
-        prev_index = self.index or 0
-
         # Abort if loop behavior is disabled or other key than up/down pressed
         if not self.loop_behavior or event.key not in ('up', 'down'):
             return False
