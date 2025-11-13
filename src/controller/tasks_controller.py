@@ -365,19 +365,16 @@ class TasksController:
         self, direction: TaskMoveDirection
     ) -> None:
         """
-        Selects the left or right column in the tasks tab.
+        Selects the left or right column/list view in the tasks tab.
 
         Args:
-            direction: The direction to move the selection (left or right).
-
+            direction: Which direction to focus to (left or right).
         """
-        self.tuido_app.notify(f'Selecting column {direction.value}')
-
         tasks_tab = self.main_tabs.tasks_tab
+        list_views = tasks_tab.list_views
 
-
-        # Skip if all columns/ListViews in tasks_tab.list_views are empty
-        if all(len(tasks_tab.list_views[column_name].children) == 0 for column_name in tasks_tab.list_views):
+        # Abort if all columns/ListViews are empty
+        if all(len(list_views[column_name].children) == 0 for column_name in list_views):
             return
 
 
@@ -403,7 +400,7 @@ class TasksController:
 
             new_column_name = column_names[new_column_index]
 
-            list_view: ListView = tasks_tab.list_views[new_column_name]
+            list_view: ListView = list_views[new_column_name]
 
 
 
