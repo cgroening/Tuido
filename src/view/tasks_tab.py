@@ -63,10 +63,10 @@ class CustomListView(ListView):
         Args:
             event: The key event that occurred.
         """
-        prev_index, new_index = self._enable_loop_behavior(event)
-        self._scroll_to_selected_item(event, prev_index, new_index)
+        loop_applied = self._enable_loop_behavior(event)
+        self._scroll_to_selected_item(event, loop_applied)
 
-    def _enable_loop_behavior(self, event: Key) -> tuple[int, int | None]:
+    def _enable_loop_behavior(self, event: Key) -> bool:
         """
         Enables loop behavior for the ListView when the up or down key is
         pressed.
@@ -80,20 +80,19 @@ class CustomListView(ListView):
             event: The key event that occurred.
 
         Returns:
-            A tuple containing the previous index and the new index. If no
-            loop behavior was applied, the new index is None.
+            A boolean indicating whether loop behavior was applied.
         """
         prev_index = self.index or 0
 
         # Abort if loop behavior is disabled or other key than up/down pressed
         if not self.loop_behavior or event.key not in ('up', 'down'):
-            return prev_index or 0, None
+            return False
 
         # Abort if current index is not the first or last index
         current_index = self.index or 0
         list_bounds = (0, len(self.children) - 1)
         if current_index not in list_bounds:
-            return prev_index or 0, None
+            return False
 
         # Determine the next index based on the key pressed
         direction = -1 if event.key == 'up' else 1
@@ -111,11 +110,9 @@ class CustomListView(ListView):
         # of scrolling and item selection in `_scroll_to_selected_item`
         event.stop()
 
-        return prev_index, new_index
+        return True
 
-    def _scroll_to_selected_item(
-        self, event: Key, prev_index: int, index: int | None
-    ) -> None:
+    def _scroll_to_selected_item(self, event: Key, loop_applied: bool) -> None:
         """
         Scrolls the parent container to maintain the currently selected item
         in view if the up or down key was pressed. Furthermore, updates the
@@ -124,20 +121,18 @@ class CustomListView(ListView):
 
         Args:
             event: The key event that occurred.
-            prev_index: The previous index of the selected item.
-            index: The new index of the selected item. If None, the current
-                   index is used.
+            loop_applied: Indicates whether loop behavior was applied.
         """
         # Get index of the currently selected item
-        index = self.index if index is None else index
+        index = self.index or 0
 
-        # Abort if other key than up/down pressed
+        # Abort if other key than up/down was pressed
         if event.key not in ('up', 'down'):
             return None
 
-        # Abort if current index is not the first or last index
-        list_bounds = (0, len(self.children) - 1)
-        if prev_index not in list_bounds:
+        # Adjust index if loop behavior was NOT applied (if loop_applied is
+        # True, it means the index was already adjusted, so leave it as is)
+        if not loop_applied:
             if event.key == 'up':
                 index = max(0, index - 1)
             elif event.key == 'down':
@@ -149,8 +144,6 @@ class CustomListView(ListView):
         self.change_class(index)
         self.tasks_tab.selected_column_name = self.column_name
         self.tasks_tab.selected_task_index = index or 0
-
-        logging.info(f'Scrolling to item index: {index}')
 
     def change_class(self, index: int) -> None:
         """
