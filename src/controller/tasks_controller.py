@@ -7,6 +7,8 @@ import time
 from textual.app import App
 from textual.widgets import ListView
 
+from pylightlib.msc.Utils import Utils
+
 from model.config_model import Config  # type: ignore
 from model.tasks_model import Task, Tasks    # type: ignore
 from view.main_view import MainTabs  # type: ignore
@@ -374,52 +376,28 @@ class TasksController:
         list_views = tasks_tab.list_views
 
         # Abort if all columns/ListViews are empty
-        if all(len(list_views[column_name].children) == 0 for column_name in list_views):
+        if all(len(list_views[column_name].children) == 0
+        for column_name in list_views):
             return
 
-
-
+        # Get index of current column
         current_column_name = tasks_tab.selected_column_name
         column_names = self.config.task_column_names
         current_column_index = column_names.index(current_column_name)
 
-
-
-
-
-
+        # Look for the next columns that has items
         while True:
-            # if direction == TaskMoveDirection.LEFT:
-            #     new_column_index = max(current_column_index - 1, 0)
-            # elif direction == TaskMoveDirection.RIGHT:
-            #     new_column_index = min(
-            #         current_column_index + 1, len(column_names) - 1
-            #     )
-
-            new_column_index = (current_column_index + direction.value) % len(column_names)
-
+            new_column_index = Utils.next_index(
+                current_column_index, len(column_names), direction.value
+            )
             new_column_name = column_names[new_column_index]
-
             list_view: ListView = list_views[new_column_name]
-
-
-
             current_column_index += direction.value
 
+            # Stop a column with items is found
             if len(list_view.children) > 0:
                 list_view.focus()
                 break
-
-
-
-
-
-
-
-        # new_column_name = column_names[new_column_index]
-        # tasks_tab.select_column(new_column_name)
-
-
 
     def delete_selected_task(self) -> None:
         """
