@@ -1,6 +1,8 @@
 import logger  # noqa: F401  # Sets up logging, not used in code, !first import!
 import logging
 import argparse
+import sys
+from pathlib import Path
 
 from textual import events, work
 from textual.app import App, ComposeResult
@@ -22,8 +24,17 @@ from controller.tasks_controller import TasksController, TaskAction, \
                                         TaskMoveDirection
 from controller.notes_controller import NotesController
 
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from themes._custom_widgets.custom_checkbox import CustomCheckbox
+from themes._custom_widgets.custom_selection import CustomSelectionList
+from themes.theme_loader import ThemeLoader
+
 
 CUSTOM_BINDINGS = CustomBindings(with_copy_paste_keys=True)
+
+THEME_CONFIG_FILE = Path.home() / '.textual_theme_lab_config.json'
+DEFAULT_THEME = 'classic-black'
+theme_loader = ThemeLoader()
 
 class TuidoApp(App):
     """
@@ -80,6 +91,12 @@ class TuidoApp(App):
 
         # Config
         self.config = Config(f'{data_folder}/config.yaml')
+
+        # Theme Loader
+        theme_loader.register_themes_in_textual_app(self)
+        theme_loader.set_previous_theme_in_textual_app(
+            self, DEFAULT_THEME, THEME_CONFIG_FILE
+        )
 
         # Models
         self.tasks_model = Tasks(f'{data_folder}/tasks.json')
@@ -139,6 +156,19 @@ class TuidoApp(App):
         # self.topics_controller.app_startup = False
         # self.main_view.tabs.active = self.main_view.current_tab_name
         pass
+
+    def watch_theme(self, theme_name: str) -> None:
+        """
+        Automatically called when `self.theme` changes.
+
+        Writes the name of the theme to the config file and loads the CSS
+        file(s) for the new theme.
+
+        Args:
+            theme_name: The new theme name.
+        """
+        theme_loader.save_theme_to_config(theme_name, THEME_CONFIG_FILE)
+        theme_loader.load_theme_css(theme_name, self)
 
     async def on_key(self, event: events.Key) -> None:
         """
