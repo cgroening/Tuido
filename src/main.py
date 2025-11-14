@@ -32,7 +32,7 @@ from controller.notes_controller import NotesController
 
 CUSTOM_BINDINGS = CustomBindings(with_copy_paste_keys=True)
 
-THEME_CONFIG_FILE = Path.home() / '.textual_theme_lab_config.json'
+THEME_CONFIG_FILE = Path.home() / '.textual_tuido_config.json'
 DEFAULT_THEME = 'classic-black'
 theme_loader = ThemeLoader()
 
