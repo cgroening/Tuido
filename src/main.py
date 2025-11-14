@@ -1,6 +1,8 @@
 import logger  # noqa: F401  # Sets up logging, not used in code, !first import!
 import logging
 import argparse
+import sys
+from pathlib import Path
 
 from textual import events, work
 from textual.app import App, ComposeResult
@@ -10,6 +12,11 @@ from textual.widgets import Footer, Header, Tabs, DataTable, Input, Select, \
 
 from pylightlib.txtl import CustomBindings
 from pylightlib.txtl.QuestionScreen import QuestionScreen
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from themes._custom_widgets.custom_checkbox import CustomCheckbox
+from themes._custom_widgets.custom_selection import CustomSelectionList
+from themes.theme_loader import ThemeLoader
 
 from model.config_model import Config
 from model.notes_model import Notes
@@ -24,6 +31,10 @@ from controller.notes_controller import NotesController
 
 
 CUSTOM_BINDINGS = CustomBindings(with_copy_paste_keys=True)
+
+THEME_CONFIG_FILE = Path.home() / '.textual_theme_lab_config.json'
+DEFAULT_THEME = 'classic-black'
+theme_loader = ThemeLoader()
 
 class TuidoApp(App):
     """
@@ -80,6 +91,12 @@ class TuidoApp(App):
 
         # Config
         self.config = Config(f'{data_folder}/config.yaml')
+
+        # Theme Loader
+        theme_loader.register_themes_in_textual_app(self)
+        theme_loader.set_previous_theme_in_textual_app(
+            self, DEFAULT_THEME, THEME_CONFIG_FILE
+        )
 
         # Models
         self.tasks_model = Tasks(f'{data_folder}/tasks.json')
@@ -158,6 +175,19 @@ class TuidoApp(App):
         #     self.last_escape_key = event.time
 
         pass
+
+    def watch_theme(self, theme_name: str) -> None:
+        """
+        Automatically called when `self.theme` changes.
+
+        Writes the name of the theme to the config file and loads the CSS
+        file(s) for the new theme.
+
+        Args:
+            theme_name: The new theme name.
+        """
+        theme_loader.save_theme_to_config(theme_name, THEME_CONFIG_FILE)
+        theme_loader.load_theme_css(theme_name, self)
 
     def check_action(self, action: str, parameters: tuple[object, ...]) \
     -> bool | None:
