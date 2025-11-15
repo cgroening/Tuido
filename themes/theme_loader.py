@@ -184,7 +184,6 @@ class ThemeLoader:
             app.theme = theme_name
 
         logging.info(f'Set previous theme: {theme_name}')
-        logging.info(f'Available themes: {app.available_themes}')
 
     def save_theme_to_config(
         self, theme_name: str, theme_config_file: Path
@@ -252,3 +251,18 @@ class ThemeLoader:
             # Check if the CSS file is inside the themes directory
             if themes_dir in css_path.parents:
                 del app.stylesheet.source[key]
+
+    def change_to_next_or_previous_theme(
+        self, direction: int, app: App
+    ) -> None:
+        """
+        Changes to the next or previous theme in the list.
+
+        Args:
+            direction: 1 for next theme, -1 for previous theme.
+            app: The instance of the Textual application.
+        """
+        themes = list(app.available_themes)
+        current_index = themes.index(app.theme)
+        next_index = (current_index + direction) % len(themes)
+        app.theme = themes[next_index]

@@ -186,8 +186,15 @@ class TuidoApp(App):
         Args:
             theme_name: The new theme name.
         """
+        self.update_header_theme_name()
         theme_loader.save_theme_to_config(theme_name, THEME_CONFIG_FILE)
         theme_loader.load_theme_css(theme_name, self)
+
+    def update_header_theme_name(self) -> None:
+        """
+        Updates the header to reflect the current theme name.
+        """
+        self.title = f'{self.TITLE} - Theme: {self.theme}'
 
     def check_action(self, action: str, parameters: tuple[object, ...]) \
     -> bool | None:
@@ -228,6 +235,18 @@ class TuidoApp(App):
 
     async def action_global_replace_widget_value_from_clipboard(self) -> None:
         CUSTOM_BINDINGS.handle_paste_from_clipboard(self, replace=True)
+
+    def action_globalalways_next_theme(self) -> None:
+        """
+        Changes to the next theme in the list.
+        """
+        theme_loader.change_to_next_or_previous_theme(1, self)
+
+    def action_globalalways_prev_theme(self) -> None:
+        """
+        Changes to the previous theme in the list.
+        """
+        theme_loader.change_to_next_or_previous_theme(-1, self)
 
     def action_globalalways_toggle_dark(self) -> None:
         """

@@ -3,7 +3,7 @@
 }
 
 .text-area--cursor, .input--cursor {
-    color: #80e98c;
+    color: #000000;
     /* background: #ff00bf; */
 }
 
@@ -22,8 +22,8 @@ ToggleButton, SelectionList {
     &.-on > .toggle--button,
     & > .selection-list--button-selected,
     & > .selection-list--button-selected-highlighted {
-        background: $success-muted !important;
-        color: $success !important;
+        background: $secondary !important;
+        color: $panel !important;
     }
 }
 
@@ -39,17 +39,17 @@ RadioButton {
     &.-on > .toggle--button,
     & > .selection-list--button-selected,
     & > .selection-list--button-selected-highlighted {
-        background: $success-muted !important;
-        color: $success !important;
+        background: $secondary !important;
+        color: $panel !important;
     }
 }
 
 Switch {
     & .switch--slider { color: $primary; background: $panel-darken-2 }
-    &.-on .switch--slider { color: $success }
+    &.-on .switch--slider { color: $panel }
     &:hover {
         & > .switch--slider { color: $primary-lighten-2 }
-        &.-on > .switch--slider { color: $success-lighten-2 }
+        &.-on > .switch--slider { color: $secondary }
     }
 }
 

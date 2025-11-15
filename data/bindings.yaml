@@ -21,6 +21,16 @@ _global_always:
     description: Quit
     tooltip: Quit the app
     show: false
+  - key: j
+    action: prev_theme
+    description: Previous Theme
+    tooltip: Activate the previous color theme
+    # show: false
+  - key: k
+    action: next_theme
+    description: Next Theme
+    tooltip: Activate the next color theme
+    # show: false
 
 # tasks:
 #   - key: f1
