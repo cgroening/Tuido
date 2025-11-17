@@ -19,6 +19,7 @@ class TaskPriority(enum.Enum):
     HIGH = 1
     MEDIUM = 2
     LOW = 3
+    NONE = 4
 
 
 @dataclass(slots=True)
@@ -205,8 +206,10 @@ class Tasks(metaclass=Singleton):
                 return TaskPriority.HIGH
             case 2:
                 return TaskPriority.MEDIUM
-            case _:
+            case 3:
                 return TaskPriority.LOW
+            case _:
+                return TaskPriority.NONE
 
     def priority_str_to_num(self, priority_string: str) -> int:
         """
@@ -223,8 +226,10 @@ class Tasks(metaclass=Singleton):
                 return 1
             case 'MEDIUM':
                 return 2
-            case _:
+            case 'LOW':
                 return 3
+            case _:
+                return 4
 
     def days_to(self, date_str: str) -> int | None:
         """

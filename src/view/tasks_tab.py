@@ -412,8 +412,10 @@ class TasksTab(Static):
                 list_item.add_class('task_prio_high')
             case TaskPriority.MEDIUM:
                 list_item.add_class('task_prio_medium')
-            case _:
+            case TaskPriority.LOW:
                 list_item.add_class('task_prio_low')
+            case _:
+                list_item.add_class('task_prio_none')
 
     def set_can_focus(self):
         """

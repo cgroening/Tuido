@@ -282,8 +282,10 @@ class TaskEditScreen(ModalScreen):
                 task_priority = 'High'
             case TaskPriority.MEDIUM:
                 task_priority = 'Medium'
-            case _:
+            case TaskPriority.LOW:
                 task_priority = 'Low'
+            case TaskPriority.NONE:
+                task_priority = None
 
         # self.priority_input.value = task_priority
         self.call_after_refresh(self._set_priority_value, task_priority)
@@ -291,11 +293,12 @@ class TaskEditScreen(ModalScreen):
         self.start_date_input.value = task.start_date
         self.end_date_input.value = task.end_date
 
-    def _set_priority_value(self, priority: str):
+    def _set_priority_value(self, priority: str | None) -> None:
         """
         Helper method to set the priority input value delayed.
         """
-        self.priority_input.value = priority
+        if priority:
+            self.priority_input.value = priority
 
     def adjust_date(self, date_name: DateName, adjustment: DateAdjustment) \
     -> None:

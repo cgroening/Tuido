@@ -142,6 +142,7 @@ class TuidoApp(App):
         Initializes the app after mounting.
         """
         # self.screen.styles.debug = True
+        self.update_header_theme_name()
 
         # Initialize the topics table
         table = self.query_one("#topics_table", expect_type=DataTable)
