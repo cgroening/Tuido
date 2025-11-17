@@ -30,8 +30,11 @@ from controller.tasks_controller import TasksController, TaskAction, \
 from controller.notes_controller import NotesController
 
 
-CUSTOM_BINDINGS = CustomBindings(with_copy_paste_keys=True)
-
+SCRIPT_DIR = Path(__file__).parent.parent
+CUSTOM_BINDINGS = CustomBindings(
+    yaml_file=f'{SCRIPT_DIR}/data/bindings.yaml',
+    with_copy_paste_keys=True
+)
 THEME_CONFIG_FILE = Path.home() / '.textual_tuido_config.json'
 DEFAULT_THEME = 'classic-black'
 theme_loader = ThemeLoader()
@@ -99,9 +102,9 @@ class TuidoApp(App):
         )
 
         # Models
-        self.tasks_model = Tasks(f'{data_folder}/tasks.json')
-        self.topics_model = Topic(f'{data_folder}/topics.json')
-        self.notes_model = Notes(f'{data_folder}/notes.md')
+        self.tasks_model = Tasks(f'{SCRIPT_DIR}/{data_folder}/tasks.json')
+        self.topics_model = Topic(f'{SCRIPT_DIR}/{data_folder}/topics.json')
+        self.notes_model = Notes(f'{SCRIPT_DIR}/{data_folder}/notes.md')
 
         # Views
         self.main_view = MainTabs(self)
