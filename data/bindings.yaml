@@ -25,12 +25,12 @@ _global_always:
     action: prev_theme
     description: Previous Theme
     tooltip: Activate the previous color theme
-    # show: false
+    show: false
   - key: k
     action: next_theme
     description: Next Theme
     tooltip: Activate the next color theme
-    # show: false
+    show: false
 
 # tasks:
 #   - key: f1

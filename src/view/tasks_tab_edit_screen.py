@@ -65,19 +65,6 @@ class TaskEditScreen(ModalScreen):
                 description='Cancel',
                 tooltip='Discard changes and close the popup',
                 show=False),
-        # Binding(key='return', key_display='ENTER', action='save',
-        #         description='Save',
-        #         tooltip='Save changes and close the popup',
-        #         show=True),
-        # Binding(key='f4', key_display='F4', action='close_modal',
-        #         description='Cancel',
-        #         tooltip='Discard changes and close the popup'),
-        # Binding(key='f5', key_display='F5', action='save',
-        #         description='Save',
-        #         tooltip='Save changes and close the popup'),
-        # Binding(key='f6', key_display='F6', action='set_end_date_to_start_date',
-        #         description='End=Start',
-        #         tooltip='Sets the end date to the start date'),
         Binding(key='f1', key_display='F1',
                 action='increase_start_date',
                 description='Start+1',
@@ -90,11 +77,18 @@ class TaskEditScreen(ModalScreen):
                 action='decrease_start_date',
                 description='Start-1',
                 tooltip='Decrease the start date by 1 day'),
-
         Binding(key='f4', key_display='F4',
                 action='decrease_end_date',
                 description='End-1',
                 tooltip='Decrease the end date by 1 day'),
+        Binding(key='f9', key_display='F9',
+                action='clear_start_date',
+                description='Clear Start',
+                tooltip='Clear the start date'),
+        Binding(key='f10', key_display='F10',
+                action='clear_end_date',
+                description='Clear End',
+                tooltip='Clear the end date'),
     ]
 
 
@@ -198,14 +192,6 @@ class TaskEditScreen(ModalScreen):
         self.app.pop_screen()
         self.submit_changes()
 
-    def action_set_end_date_to_start_date(self) -> None:
-        """
-        Sets the end date to the same value as the start date.
-        """
-        self.end_date_input.value = self.start_date_input.value
-        self.update_weekday_labels()
-        self.end_date_input.refresh()
-
     def action_decrease_start_date(self) -> None:
         """
         Decreases the start date by 1 day.
@@ -229,6 +215,60 @@ class TaskEditScreen(ModalScreen):
         Increases the end date by 1 day.
         """
         self.adjust_date(DateName.END_DATE, DateAdjustment.INCREASE)
+
+    def action_clear_start_date(self) -> None:
+        """
+            Removes the value from the start date input field.
+        """
+        self.start_date_input.value = ''
+        self.update_weekday_labels()
+        self.start_date_input.refresh()
+
+    def action_clear_end_date(self) -> None:
+        """
+            Removes the value from the end date input field.
+        """
+        self.end_date_input.value = ''
+        self.update_weekday_labels()
+        self.end_date_input.refresh()
+
+    def synchronize_start_and_end_date(self, adjust_start_date: bool = False) \
+    -> None:
+        """
+        Sets the end date to be the same as the start date if the start date is
+        later than the end date.
+
+        Args:
+            adjust_start_date: If True, adjusts the start date instead of the
+                end date when the start date is after the end date.
+        """
+        # Parse the date values from the input fields
+        try:
+            start_date = datetime.strptime(
+                self.start_date_input.value, "%Y-%m-%d"
+            )
+        except ValueError:
+            start_date = None
+
+        try:
+            end_date = datetime.strptime(
+                self.end_date_input.value, "%Y-%m-%d"
+            )
+        except ValueError:
+            end_date = None
+
+        if not start_date or not end_date:
+            return
+
+        # Adjust the end date if the start date is after the end date
+        if start_date > end_date:
+            if adjust_start_date:
+                self.adjust_date(DateName.START_DATE, DateAdjustment.DECREASE)
+            else:
+                self.end_date_input.value = self.start_date_input.value
+
+        self.update_weekday_labels()
+        self.end_date_input.refresh()
 
     async def discard_unsaved_changes(self) -> bool:
         """
@@ -341,6 +381,13 @@ class TaskEditScreen(ModalScreen):
             # If the input is empty, set it to today's date
             input_widget.value = datetime.now().strftime("%Y-%m-%d")
 
+        # Make sure the start date is not after the end date
+        if date_name == DateName.END_DATE \
+        and adjustment == DateAdjustment.DECREASE:
+            adjust_start_date = True
+        else:
+            adjust_start_date = False
+        self.synchronize_start_and_end_date(adjust_start_date)
         input_widget.refresh()
 
     def on_input_changed(self, event: Input.Changed) -> None:
