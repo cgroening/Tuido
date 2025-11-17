@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from textual import work
+from textual import events
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import HorizontalGroup, VerticalGroup
@@ -64,6 +65,10 @@ class TaskEditScreen(ModalScreen):
                 description='Cancel',
                 tooltip='Discard changes and close the popup',
                 show=False),
+        # Binding(key='return', key_display='ENTER', action='save',
+        #         description='Save',
+        #         tooltip='Save changes and close the popup',
+        #         show=True),
         Binding(key='f4', key_display='F4', action='close_modal',
                 description='Cancel',
                 tooltip='Discard changes and close the popup'),
@@ -364,6 +369,18 @@ class TaskEditScreen(ModalScreen):
 
             self.update_weekday_labels()
             event.input.refresh()
+
+    async def on_key(self, event: events.Key) -> None:
+        """
+        Handles key press events.
+
+        If the Enter key is pressed, it triggers the save action.
+
+        Args:
+            event: The key press event.
+        """
+        if event.key == 'enter':
+            self.action_save()
 
     def is_valid_date(self, date_str: str) -> bool:
         """
