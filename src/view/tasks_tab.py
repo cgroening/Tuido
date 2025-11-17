@@ -55,7 +55,6 @@ class CustomListView(ListView):
         self.column_name = column_name
         self.loop_behavior = loop_behavior
 
-
     async def on_key(self, event: Key) -> None:
         """
         Handles key events for the ListView.
@@ -274,6 +273,16 @@ class TasksTab(Static):
                         )
                         self.list_views[column_name] = list_view
                         yield list_view
+
+    async def on_key(self, event: Key) -> None:
+        """
+        Handles key events for the ListView.
+
+        Args:
+            event: The key event that occurred.
+        """
+        if event.key == 'enter':
+            self.tuido_app.action_tasks_edit()
 
     def create_list_items(self, column_name: str) -> list[ListItem]:
         """
