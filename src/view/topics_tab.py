@@ -6,7 +6,7 @@ from textual.widgets import Static, DataTable, Input, Label, Select, TextArea
 from textual.widgets._data_table import ColumnKey, Column
 from rich.text import Text  # type: ignore # noqa
 
-from pylightlib.txtl.CustomDataTable import CustomDataTable
+from pylightlib.textual.CustomDataTable import CustomDataTable
 
 from model.config_model import Config, FieldDefinition  # type: ignore
 

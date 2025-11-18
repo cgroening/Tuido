@@ -10,8 +10,8 @@ from textual.reactive import reactive
 from textual.widgets import Footer, Header, Tabs, DataTable, Input, Select, \
                             TextArea, Markdown
 
-from pylightlib.txtl import CustomBindings
-from pylightlib.txtl.QuestionScreen import QuestionScreen
+from pylightlib.textual import CustomBindings
+from pylightlib.textual.QuestionScreen import QuestionScreen
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from themes._custom_widgets.custom_checkbox import CustomCheckbox
