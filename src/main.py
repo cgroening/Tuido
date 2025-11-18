@@ -92,7 +92,7 @@ class TuidoApp(App):
         data_folder = args.data_folder if args.data_folder else 'data'
 
         # Config
-        self.config = Config(f'{data_folder}/config.yaml')
+        self.config = Config(f'{SCRIPT_DIR}/{data_folder}/config.yaml')
 
         # Theme Loader
         theme_loader.register_themes_in_textual_app(self)
