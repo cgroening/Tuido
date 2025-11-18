@@ -13,10 +13,9 @@ from textual.widgets import Footer, Header, Tabs, DataTable, Input, Select, \
 from pylightlib.textual import CustomBindings
 from pylightlib.textual.question_screen import QuestionScreen
 
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-from themes._custom_widgets.custom_checkbox import CustomCheckbox
-from themes._custom_widgets.custom_selection import CustomSelectionList
-from themes.theme_loader import ThemeLoader
+# from pylightlib.textual.custom_checkbox import CustomCheckbox
+# from pylightlib.textual.custom_selection import CustomSelectionList
+from pylightlib.textual.theme_loader import ThemeLoader
 
 from model.config_model import Config
 from model.notes_model import Notes
@@ -35,9 +34,9 @@ CUSTOM_BINDINGS = CustomBindings(
     yaml_file=f'{SCRIPT_DIR}/data/bindings.yaml',
     with_copy_paste_keys=True
 )
-THEME_CONFIG_FILE = Path.home() / '.textual_tuido_config.json'
+THEME_CONFIG_FILE = Path.home() / '.textual_theme_lab_config.json'
 DEFAULT_THEME = 'classic-black'
-theme_loader = ThemeLoader()
+theme_loader = ThemeLoader(f'{SCRIPT_DIR}/themes', include_standard_themes=True)
 
 class TuidoApp(App):
     """
