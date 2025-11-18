@@ -13,7 +13,7 @@ from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Input, Label, Select, MaskedInput, ListView, Static, Footer
 
-from pylightlib.textual.QuestionScreen import QuestionScreen
+from pylightlib.textual.question_screen import QuestionScreen
 
 from model.tasks_model import Task, TaskPriority
 from model.config_model import Config
