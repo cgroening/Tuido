@@ -2,10 +2,15 @@ import logging
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent.parent
+LOG_DIR = SCRIPT_DIR / 'log'
+LOG_FILE = LOG_DIR / 'info.log'
 
-# Setup logging
+# Make sure that LOG_DIR exists
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+# Setup logging (the log file is automatically created if it doens't exist)
 logging.basicConfig(
-    filename=f'{SCRIPT_DIR}/log/info.log',
+    filename=LOG_FILE,
     filemode='w',
     level=logging.DEBUG,
     format='%(asctime)s [%(levelname)s] %(message)s'
