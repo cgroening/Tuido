@@ -64,7 +64,12 @@ class TaskEditScreen(ModalScreen):
         Binding(key='escape', key_display='ESC', action='close_modal',
                 description='Cancel',
                 tooltip='Discard changes and close the popup',
-                show=False),
+                show=True),
+        Binding(key='enter', key_display='ENTER', action='save',
+                description='Save',
+                tooltip='Save changes and close the popup',
+                priority=True,
+                show=True),
         Binding(key='f1', key_display='F1',
                 action='increase_start_date',
                 description='Start+1',
@@ -313,7 +318,7 @@ class TaskEditScreen(ModalScreen):
                 return False
         return True
 
-    def set_input_values(self, task: Task):
+    def set_input_values(self, task: Task) -> None:
         """
         Sets the input values in the popup based on the provided task.
 
@@ -454,7 +459,7 @@ class TaskEditScreen(ModalScreen):
         except ValueError:
             return False
 
-    def update_weekday_labels(self):
+    def update_weekday_labels(self) -> None:
         """
         Sets the weekday labels for the start and end date inputs.
 
@@ -487,7 +492,7 @@ class TaskEditScreen(ModalScreen):
         except ValueError:
             return ''
 
-    def submit_changes(self):
+    def submit_changes(self) -> None:
         """
         Submits the changes made in the popup.
 
@@ -523,14 +528,6 @@ class TaskEditScreen(ModalScreen):
         else:
             return False
 
-    async def on_unmount(self, event: Message):
-        """
-        Called when the popup is unmounted.
-        This method is currently empty but can be used to perform any cleanup
-        actions when the popup is removed from the screen.
-        """
-        pass
-
     def set_list_view_state(self, enabled: bool) -> None:
         """
         Sets the state of the list views to either enabled or disabled.
@@ -538,3 +535,12 @@ class TaskEditScreen(ModalScreen):
         for list_view in self.list_views.values():
             list_view.can_focus = enabled
             list_view.disabled = not enabled
+
+    async def on_unmount(self, event: Message):
+        """
+        Called when the popup is unmounted.
+
+        This method is currently empty but can be used to perform any cleanup
+        actions when the popup is removed from the screen.
+        """
+        pass

@@ -137,10 +137,6 @@ ListView ListItem.task_prio_none.selected {
 
 TaskEditScreen {
     align: center middle;
-    padding: 2 2 2 2;
-    /* background: $background; */
-    /* width: 80%; */
-    /* height: auto; */
 }
 
 TaskEditScreen #main_container {
