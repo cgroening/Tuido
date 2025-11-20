@@ -1,7 +1,6 @@
 import logger  # noqa: F401  # Sets up logging, not used in code, !first import!
 import logging
 import argparse
-import sys
 from pathlib import Path
 
 from textual import events, work
