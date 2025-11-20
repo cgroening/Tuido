@@ -127,6 +127,7 @@ class TaskEditScreen(ModalScreen):
 
         priorities = ['Low', 'Medium', 'High']
         self.priority_input = Select((option, option) for option in priorities)
+        self.priority_input.id = 'priority_input'
 
         self.start_date_input = MaskedInput(
             id='start_date', template='9999-99-99;0', placeholder='YYYY-MM-DD'
@@ -178,6 +179,25 @@ class TaskEditScreen(ModalScreen):
             footer = Footer()
             footer.compact = True
             yield footer
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) \
+    -> bool | None:
+        """
+        Checks if an action should be processed or ignored.
+
+        Args:
+            action: The action name.
+            parameters: The action parameters.
+        """
+        # Suppress the save action if the priority input has focus or is
+        # expanded
+        priority_input: Select = self.priority_input
+        if action == 'save':
+            if priority_input.has_focus or priority_input.expanded:
+                return None
+
+        # Otherwise, process the action normally
+        return super().check_action(action, parameters)
 
     @work
     async def action_close_modal(self) -> None:
@@ -432,8 +452,15 @@ class TaskEditScreen(ModalScreen):
         Args:
             event: The key press event.
         """
-        if event.key == 'enter':
-            self.action_save()
+        pass
+        # if event.key == 'enter':
+        #     self.action_save()
+
+        # if not self.priority_input.has_focus:
+        #     if event.key == 'up':
+        #         self.focus_previous()
+        #     elif event.key == 'down':
+        #         self.focus_next()
 
     def is_valid_date(self, date_str: str) -> bool:
         """
